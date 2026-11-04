@@ -19,6 +19,6 @@
   "out_of_range_age": 0,
   "out_of_range_cgpa": 0,
   "out_of_range_semester": 0,
-  "zero_cost_count": 2,
-  "logical_conflict_relationship_marital": 201
+  "zero_or_negative_cost_count": 2,
+  "relationship_marital_discrepancy_count": 201
 }

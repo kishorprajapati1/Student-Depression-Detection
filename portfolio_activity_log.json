@@ -14,5 +14,23 @@
         }
       }
     ]
+  },
+  {
+    "timestamp_utc": "2026-11-04T12:49:10.936515+00:00",
+    "total_projects": 1,
+    "projects": [
+      {
+        "project_id": "project_01",
+        "project_name": "Student Depression & Mental Health Analytics",
+        "status": "Healthy",
+        "metrics": {
+          "total_records": 4464,
+          "depressed_count": 1201,
+          "prevalence_pct": 26.9,
+          "avg_cgpa": 3.41,
+          "avg_monthly_cost_bdt": 11243.0
+        }
+      }
+    ]
   }
 ]

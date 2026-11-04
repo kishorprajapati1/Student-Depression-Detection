@@ -1,36 +1,31 @@
 // =============================================================================
-// POWER QUERY (M CODE): DATA INGESTION, TRANSFORMATION & STAR SCHEMA MODELING
+// POWER QUERY (M CODE): ENTERPRISE STAR SCHEMA ARCHITECTURE
 // Project: Student Depression Analytics & Risk Modeling
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-// QUERY 1: Source_StudentDepression (Base Extraction & Type Coercion)
+// 1. PARAMETER: pDataFilePath
+// Purpose: Eliminates hardcoded absolute paths so the model can be refreshed
+//          on any machine or environment without modifying transformation code.
 // -----------------------------------------------------------------------------
 let
-    // 1. Ingest Raw CSV File
+    pDataFilePath = "d:\PowerBi Projects\Project-01_Student_Depression_Analysis\data\processed\student_depression_cleaned.csv" 
+        meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+in
+    pDataFilePath
+
+
+// -----------------------------------------------------------------------------
+// 2. QUERY: stg_StudentDepression (Base Ingestion & Type Enforcement)
+// -----------------------------------------------------------------------------
+let
     Source = Csv.Document(
-        File.Contents("D:\PowerBi Projects\Project-01_Student_Depression_Analysis\data\raw\student_depression_raw.csv"),
-        [Delimiter=",", Columns=13, Encoding=65001, QuoteStyle=QuoteStyle.None]
+        File.Contents(pDataFilePath),
+        [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.None]
     ),
-    
-    // 2. Promote Headers
     PromoteHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
-    
-    // 3. Trim All Text Columns (Defensive Cleaning against trailing/leading spaces)
-    TrimText = Table.TransformColumns(PromoteHeaders, {
-        {"Gender", Text.Trim, type text},
-        {"Family_background", Text.Trim, type text},
-        {"Relationship_status", Text.Trim, type text},
-        {"Marital_status", Text.Trim, type text},
-        {"Living_style", Text.Trim, type text},
-        {"friend_circle", Text.Trim, type text},
-        {"Health_condition", Text.Trim, type text},
-        {"Home_division", Text.Trim, type text},
-        {"Depression", Text.Trim, type text}
-    }),
-    
-    // 4. Strongly Type Each Column
-    SetDataTypes = Table.TransformColumnTypes(TrimText, {
+    SetDataTypes = Table.TransformColumnTypes(PromoteHeaders, {
+        {"Student_ID", type text},
         {"Gender", type text},
         {"Age", Int64.Type},
         {"Family_background", type text},
@@ -43,67 +38,108 @@ let
         {"Health_condition", type text},
         {"Cost_without_study", type number},
         {"Home_division", type text},
-        {"Depression", type text}
-    }),
-    
-    // 5. Add Student Surrogate Key (STU-00001, etc.)
-    AddIndex = Table.AddIndexColumn(SetDataTypes, "Index", 1, 1, Int64.Type),
-    AddStudentID = Table.AddColumn(AddIndex, "Student_ID", each "STU-" & Text.PadStart(Text.From([Index]), 5, "0"), type text),
-    RemoveIndex = Table.RemoveColumns(AddStudentID, {"Index"}),
-    
-    // 6. Binary Depression Flag (0 or 1) for High-Performance DAX Aggregations
-    AddDepressionFlag = Table.AddColumn(RemoveIndex, "Depression_Flag", each if [Depression] = "Yes" then 1 else 0, Int64.Type),
-    
-    // 7. CGPA Tier Classification
-    AddCGPATier = Table.AddColumn(AddDepressionFlag, "CGPA_Tier", each 
-        if [CGPA] >= 3.80 then "High Distinction (3.80 - 4.00)"
-        else if [CGPA] >= 3.50 then "First Class (3.50 - 3.79)"
-        else if [CGPA] >= 3.00 then "Second Class Upper (3.00 - 3.49)"
-        else "Pass / Needs Support (< 3.00)", type text),
-        
-    AddCGPATierSort = Table.AddColumn(AddCGPATier, "CGPA_Tier_Sort", each 
-        if [CGPA] >= 3.80 then 1
-        else if [CGPA] >= 3.50 then 2
-        else if [CGPA] >= 3.00 then 3
-        else 4, Int64.Type),
-
-    // 8. Academic Stage Classification
-    AddAcademicStage = Table.AddColumn(AddCGPATierSort, "Academic_Stage", each 
-        if [Current_semester] = 0 then "Foundation / Intake (Sem 0)"
-        else if [Current_semester] <= 4 then "Early Stage (Sem 1-4)"
-        else if [Current_semester] <= 8 then "Mid Stage (Sem 5-8)"
-        else "Graduating / Extended (Sem 9+)", type text),
-        
-    AddAcademicStageSort = Table.AddColumn(AddAcademicStage, "Academic_Stage_Sort", each 
-        if [Current_semester] = 0 then 0
-        else if [Current_semester] <= 4 then 1
-        else if [Current_semester] <= 8 then 2
-        else 3, Int64.Type),
-
-    // 9. Cost Bracket Classification (Monthly Living Cost in BDT)
-    AddCostBracket = Table.AddColumn(AddAcademicStageSort, "Cost_Bracket", each 
-        if [Cost_without_study] < 5000 then "Low (< 5k BDT)"
-        else if [Cost_without_study] <= 12000 then "Moderate (5k - 12k BDT)"
-        else if [Cost_without_study] <= 20000 then "High (12k - 20k BDT)"
-        else "Very High (> 20k BDT)", type text),
-        
-    AddCostBracketSort = Table.AddColumn(AddCostBracket, "Cost_Bracket_Sort", each 
-        if [Cost_without_study] < 5000 then 1
-        else if [Cost_without_study] <= 12000 then 2
-        else if [Cost_without_study] <= 20000 then 3
-        else 4, Int64.Type),
-
-    // 10. Health Clinical Risk Classification
-    AddHealthRisk = Table.AddColumn(AddCostBracketSort, "Health_Risk_Category", each 
-        if [Health_condition] = "Critical" then "Severe Clinical Risk"
-        else if [Health_condition] = "Abnormal" then "Elevated Risk"
-        else if [Health_condition] = "Normal" then "Low Risk"
-        else "Optimal / Healthy", type text),
-        
-    AddHealthRiskSort = Table.AddColumn(AddHealthRisk, "Health_Risk_Sort", each 
-        if [Health_condition] = "Critical" then 1
-        else if [Health_condition] = "Abnormal" then 2
-        else if [Health_condition] = "Normal" then 3
-        else 4, Int64.Type)
+        {"Depression", type text},
+        {"Depression_Flag", Int64.Type},
+        {"CGPA_Tier", type text},
+        {"CGPA_Tier_Sort", Int64.Type},
+        {"Academic_Stage", type text},
+        {"Academic_Stage_Sort", Int64.Type},
+        {"Cost_Bracket", type text},
+        {"Cost_Bracket_Sort", Int64.Type},
+        {"Health_Risk_Category", type text},
+        {"Health_Risk_Sort", Int64.Type}
+    })
 in
-    AddHealthRiskSort
+    SetDataTypes
+
+
+// -----------------------------------------------------------------------------
+// 3. DIMENSION: Dim_Demographics
+// -----------------------------------------------------------------------------
+let
+    Source = stg_StudentDepression,
+    SelectColumns = Table.SelectColumns(Source, {
+        "Gender", "Age", "Family_background", "Relationship_status", 
+        "Marital_status", "Living_style"
+    }),
+    RemoveDuplicates = Table.Distinct(SelectColumns),
+    AddSurrogateKey = Table.AddIndexColumn(RemoveDuplicates, "Demographic_Key", 1, 1, Int64.Type)
+in
+    AddSurrogateKey
+
+
+// -----------------------------------------------------------------------------
+// 4. DIMENSION: Dim_Academic
+// -----------------------------------------------------------------------------
+let
+    Source = stg_StudentDepression,
+    SelectColumns = Table.SelectColumns(Source, {
+        "Current_semester", "Academic_Stage", "Academic_Stage_Sort"
+    }),
+    RemoveDuplicates = Table.Distinct(SelectColumns),
+    AddSurrogateKey = Table.AddIndexColumn(RemoveDuplicates, "Academic_Key", 1, 1, Int64.Type)
+in
+    AddSurrogateKey
+
+
+// -----------------------------------------------------------------------------
+// 5. DIMENSION: Dim_Health_Social
+// -----------------------------------------------------------------------------
+let
+    Source = stg_StudentDepression,
+    SelectColumns = Table.SelectColumns(Source, {
+        "Health_condition", "Health_Risk_Category", "Health_Risk_Sort", "friend_circle"
+    }),
+    RemoveDuplicates = Table.Distinct(SelectColumns),
+    AddSurrogateKey = Table.AddIndexColumn(RemoveDuplicates, "Health_Social_Key", 1, 1, Int64.Type)
+in
+    AddSurrogateKey
+
+
+// -----------------------------------------------------------------------------
+// 6. DIMENSION: Dim_Geography
+// -----------------------------------------------------------------------------
+let
+    Source = stg_StudentDepression,
+    SelectColumns = Table.SelectColumns(Source, {"Home_division"}),
+    RemoveDuplicates = Table.Distinct(SelectColumns),
+    AddZone = Table.AddColumn(RemoveDuplicates, "Zone", each 
+        if [Home_division] = "Dhaka" or [Home_division] = "Mymensingh" then "Central"
+        else if [Home_division] = "Chittagong" or [Home_division] = "Sylhet" then "Eastern"
+        else if [Home_division] = "Rajshahi" or [Home_division] = "Rangpur" then "Northern"
+        else "South-Western", type text),
+    AddSurrogateKey = Table.AddIndexColumn(AddZone, "Geography_Key", 1, 1, Int64.Type)
+in
+    AddSurrogateKey
+
+
+// -----------------------------------------------------------------------------
+// 7. FACT TABLE: Fact_Student_Assessment
+// -----------------------------------------------------------------------------
+let
+    Source = stg_StudentDepression,
+
+    // Merge Demographic Key
+    MergeDemo = Table.NestedJoin(Source, {"Gender", "Age", "Family_background", "Relationship_status", "Marital_status", "Living_style"}, Dim_Demographics, {"Gender", "Age", "Family_background", "Relationship_status", "Marital_status", "Living_style"}, "Dim_Demographics", JoinKind.LeftOuter),
+    ExpandDemo = Table.ExpandTableColumn(MergeDemo, "Dim_Demographics", {"Demographic_Key"}, {"Demographic_Key"}),
+
+    // Merge Academic Key
+    MergeAcademic = Table.NestedJoin(ExpandDemo, {"Current_semester"}, Dim_Academic, {"Current_semester"}, "Dim_Academic", JoinKind.LeftOuter),
+    ExpandAcademic = Table.ExpandTableColumn(MergeAcademic, "Dim_Academic", {"Academic_Key"}, {"Academic_Key"}),
+
+    // Merge Health Social Key
+    MergeHealth = Table.NestedJoin(ExpandAcademic, {"Health_condition", "friend_circle"}, Dim_Health_Social, {"Health_condition", "friend_circle"}, "Dim_Health_Social", JoinKind.LeftOuter),
+    ExpandHealth = Table.ExpandTableColumn(MergeHealth, "Dim_Health_Social", {"Health_Social_Key"}, {"Health_Social_Key"}),
+
+    // Merge Geography Key
+    MergeGeo = Table.NestedJoin(ExpandHealth, {"Home_division"}, Dim_Geography, {"Home_division"}, "Dim_Geography", JoinKind.LeftOuter),
+    ExpandGeo = Table.ExpandTableColumn(MergeGeo, "Dim_Geography", {"Geography_Key"}, {"Geography_Key"}),
+
+    // Keep Only Surrogate Keys and Analytical Fact Attributes
+    SelectFactColumns = Table.SelectColumns(ExpandGeo, {
+        "Student_ID", "Demographic_Key", "Academic_Key", "Health_Social_Key", "Geography_Key",
+        "CGPA", "CGPA_Tier", "CGPA_Tier_Sort", "Cost_without_study", "Cost_Bracket", "Cost_Bracket_Sort",
+        "Depression", "Depression_Flag"
+    })
+in
+    SelectFactColumns

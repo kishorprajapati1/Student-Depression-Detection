@@ -1,14 +1,13 @@
-# 📈 Portfolio Automated Metrics & Live Health Status
+# 📈 Portfolio Automated Metrics & Pipeline Status
 
-> **Last Automated Verification (UTC)**: `2026-11-04T12:35:13.571705+00:00`  
-> **Status**: All Project Pipelines Verified & Healthy ✅
+> **Last Automated Verification**: `2026-11-04T12:49:10.936515+00:00`  
+> **Status**: Verified & Operational ✅
 
 ## Active Projects Registry
 
-| Project | Dataset Records | Primary KPI | Depression Prevalence | Status |
-| :--- | :---: | :--- | :---: | :---: |
-| **Project 1: Student Depression Detection** | 4,464 | Health Risk (Critical: 100%) | 26.90% | `Active / Verified` |
-| **Project 2: Upcoming Transition Project** | Pending | Awaiting Next Dataset | -- | `Queued` |
+| Project | Records | Depression Prevalence | Avg CGPA | Avg Living Cost | Health Status |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **01. Student Depression Analytics** | 4,464 | 26.9% | 3.41 / 4.00 | 11,243 BDT | `Healthy` |
 
 ---
-*Generated automatically via GitHub Actions Daily Activity Workflow.*
+*Maintained automatically by GitHub Actions workflow (`daily-activity.yml`).*
