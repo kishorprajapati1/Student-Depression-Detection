@@ -1,8 +1,8 @@
 /**
  * Project 01: Student Mental Health & Predictive Risk System
- * Controller & ZoomCharts-Inspired Reactive Visual Engine
+ * Controller & ZoomCharts-Inspired Executive UI Engine
  * Author: Kishor Prajapati (kishorprajapati.com)
- * No Emojis, Clean Clinical Architecture
+ * No Emojis | High Performance | Dynamic What-If Simulator
  */
 
 (function () {
@@ -21,6 +21,8 @@
       stage: "All",
       semester: "All",
       living: "All",
+      friends: "All",
+      relationship: "All",
     },
     searchQuery: "",
     currentPage: 1,
@@ -45,9 +47,13 @@
     tierFilter: document.getElementById("filter-tier"),
     stageFilter: document.getElementById("filter-stage"),
     btnReset: document.getElementById("btn-reset-filters"),
-    filterSummary: document.getElementById("filter-summary-text"),
     breadcrumbStrip: document.getElementById("breadcrumb-strip"),
     btnFullscreen: document.getElementById("btn-fullscreen"),
+
+    presetAll: document.getElementById("preset-all"),
+    presetCriticalHealth: document.getElementById("preset-critical-health"),
+    presetIsolated: document.getElementById("preset-isolated"),
+    presetHighRisk: document.getElementById("preset-high-risk"),
 
     kpiTotal: document.getElementById("kpi-total-val"),
     kpiPrevalence: document.getElementById("kpi-prev-val"),
@@ -55,8 +61,8 @@
     kpiCgpa: document.getElementById("kpi-cgpa-val"),
     kpiCost: document.getElementById("kpi-cost-val"),
 
-    tabBtns: document.querySelectorAll(".tab-btn"),
-    tabPanels: document.querySelectorAll(".tab-panel"),
+    tabTriggers: document.querySelectorAll(".tab-trigger"),
+    tabPanes: document.querySelectorAll(".tab-pane"),
 
     tableBody: document.getElementById("roster-table-body"),
     tableSearch: document.getElementById("table-search"),
@@ -82,11 +88,14 @@
     simProtocolText: document.getElementById("sim-protocol-text"),
   };
 
-  // Initialize Application
+  // Initialize
   function init() {
     populateFilterOptions();
-    attachEventListeners();
+    attachFilterListeners();
+    attachPresetListeners();
+    attachTabListeners();
     attachSimulatorListeners();
+    attachTableListeners();
     initCharts();
     render();
     runSimulator();
@@ -103,9 +112,8 @@
     });
   }
 
-  // Event Listeners
-  function attachEventListeners() {
-    // Slicers
+  // Filter Listeners
+  function attachFilterListeners() {
     els.divisionFilter.addEventListener("change", (e) => {
       state.filters.division = e.target.value;
       state.currentPage = 1;
@@ -138,7 +146,7 @@
 
     els.btnReset.addEventListener("click", resetAllFilters);
 
-    // Fullscreen Mode
+    // Fullscreen View
     els.btnFullscreen.addEventListener("click", () => {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
@@ -148,22 +156,88 @@
         els.btnFullscreen.textContent = "Fullscreen View";
       }
     });
+  }
 
-    // Tab Navigation
-    els.tabBtns.forEach((btn) => {
+  // Preset Filters
+  function attachPresetListeners() {
+    const clearPresetActives = () => {
+      document.querySelectorAll(".preset-pill").forEach((p) => p.classList.remove("active"));
+    };
+
+    els.presetAll.addEventListener("click", () => {
+      clearPresetActives();
+      els.presetAll.classList.add("active");
+      resetAllFilters();
+    });
+
+    els.presetCriticalHealth.addEventListener("click", () => {
+      clearPresetActives();
+      els.presetCriticalHealth.classList.add("active");
+      resetAllFilters();
+      state.filters.health = "Critical";
+      els.healthFilter.value = "Critical";
+      render();
+    });
+
+    els.presetIsolated.addEventListener("click", () => {
+      clearPresetActives();
+      els.presetIsolated.classList.add("active");
+      resetAllFilters();
+      state.filters.friends = "No";
+      state.filters.relationship = "Single";
+      render();
+    });
+
+    els.presetHighRisk.addEventListener("click", () => {
+      clearPresetActives();
+      els.presetHighRisk.classList.add("active");
+      resetAllFilters();
+      state.filters.tier = "Critical Risk";
+      els.tierFilter.value = "Critical Risk";
+      render();
+    });
+  }
+
+  function resetAllFilters() {
+    state.filters.division = "All";
+    state.filters.gender = "All";
+    state.filters.health = "All";
+    state.filters.tier = "All";
+    state.filters.stage = "All";
+    state.filters.semester = "All";
+    state.filters.living = "All";
+    state.filters.friends = "All";
+    state.filters.relationship = "All";
+    state.searchQuery = "";
+
+    els.divisionFilter.value = "All";
+    els.genderFilter.value = "All";
+    els.healthFilter.value = "All";
+    els.tierFilter.value = "All";
+    els.stageFilter.value = "All";
+    els.tableSearch.value = "";
+    state.currentPage = 1;
+    render();
+  }
+
+  // Tab Listeners
+  function attachTabListeners() {
+    els.tabTriggers.forEach((btn) => {
       btn.addEventListener("click", () => {
         const targetTab = btn.getAttribute("data-tab");
-        els.tabBtns.forEach((b) => b.classList.remove("active"));
-        els.tabPanels.forEach((p) => p.classList.remove("active"));
+        els.tabTriggers.forEach((b) => b.classList.remove("active"));
+        els.tabPanes.forEach((p) => p.classList.remove("active"));
         btn.classList.add("active");
         document.getElementById(`tab-${targetTab}`).classList.add("active");
 
-        // Resize charts to fit new visibility
+        // Resize charts to fit new container dimensions
         Object.values(state.charts).forEach((c) => c && c.resize());
       });
     });
+  }
 
-    // Table Search & Pagination
+  // Table Listeners
+  function attachTableListeners() {
     els.tableSearch.addEventListener("input", (e) => {
       state.searchQuery = e.target.value.trim().toLowerCase();
       state.currentPage = 1;
@@ -189,27 +263,7 @@
     els.btnExportCsv.addEventListener("click", exportFilteredCsv);
   }
 
-  function resetAllFilters() {
-    state.filters.division = "All";
-    state.filters.gender = "All";
-    state.filters.health = "All";
-    state.filters.tier = "All";
-    state.filters.stage = "All";
-    state.filters.semester = "All";
-    state.filters.living = "All";
-    state.searchQuery = "";
-
-    els.divisionFilter.value = "All";
-    els.genderFilter.value = "All";
-    els.healthFilter.value = "All";
-    els.tierFilter.value = "All";
-    els.stageFilter.value = "All";
-    els.tableSearch.value = "";
-    state.currentPage = 1;
-    render();
-  }
-
-  // Filter Engine
+  // Filtering Engine
   function getFilteredRecords() {
     return state.records.filter((r) => {
       if (state.filters.division !== "All" && r.division !== state.filters.division) return false;
@@ -218,6 +272,8 @@
       if (state.filters.tier !== "All" && r.risk_tier !== state.filters.tier) return false;
       if (state.filters.semester !== "All" && r.semester !== parseInt(state.filters.semester, 10)) return false;
       if (state.filters.living !== "All" && r.living !== state.filters.living) return false;
+      if (state.filters.friends !== "All" && r.friends !== state.filters.friends) return false;
+      if (state.filters.relationship !== "All" && r.relationship !== state.filters.relationship) return false;
 
       if (state.filters.stage !== "All") {
         if (state.filters.stage === "Early" && r.semester > 3) return false;
@@ -244,61 +300,47 @@
     renderKPIs(filtered);
     updateCharts(filtered);
     renderTable();
-    updateFilterSummary(filtered);
   }
 
-  // ZoomCharts Style Interactive Breadcrumb Strip
+  // Breadcrumb Trail (ZoomCharts Style)
   function renderBreadcrumbs() {
-    const activeFilters = [];
+    const active = [];
+    if (state.filters.division !== "All") active.push({ key: "division", label: `Division: ${state.filters.division}` });
+    if (state.filters.health !== "All") active.push({ key: "health", label: `Health: ${state.filters.health}` });
+    if (state.filters.tier !== "All") active.push({ key: "tier", label: `Tier: ${state.filters.tier}` });
+    if (state.filters.gender !== "All") active.push({ key: "gender", label: `Gender: ${state.filters.gender}` });
+    if (state.filters.stage !== "All") active.push({ key: "stage", label: `Stage: ${state.filters.stage}` });
+    if (state.filters.semester !== "All") active.push({ key: "semester", label: `Semester ${state.filters.semester}` });
+    if (state.filters.living !== "All") active.push({ key: "living", label: `Living: ${state.filters.living}` });
+    if (state.filters.friends !== "All") active.push({ key: "friends", label: `Friends: ${state.filters.friends}` });
+    if (state.filters.relationship !== "All") active.push({ key: "relationship", label: `Status: ${state.filters.relationship}` });
 
-    if (state.filters.division !== "All") {
-      activeFilters.push({ key: "division", label: `Division: ${state.filters.division}` });
-    }
-    if (state.filters.health !== "All") {
-      activeFilters.push({ key: "health", label: `Health: ${state.filters.health}` });
-    }
-    if (state.filters.tier !== "All") {
-      activeFilters.push({ key: "tier", label: `Tier: ${state.filters.tier}` });
-    }
-    if (state.filters.gender !== "All") {
-      activeFilters.push({ key: "gender", label: `Gender: ${state.filters.gender}` });
-    }
-    if (state.filters.stage !== "All") {
-      activeFilters.push({ key: "stage", label: `Stage: ${state.filters.stage}` });
-    }
-    if (state.filters.semester !== "All") {
-      activeFilters.push({ key: "semester", label: `Semester ${state.filters.semester}` });
-    }
-    if (state.filters.living !== "All") {
-      activeFilters.push({ key: "living", label: `Living: ${state.filters.living}` });
-    }
+    els.breadcrumbStrip.innerHTML = '<span class="breadcrumb-title">Active Focus:</span>';
 
-    els.breadcrumbStrip.innerHTML = '<span class="breadcrumb-label">Active Focus:</span>';
-
-    if (activeFilters.length === 0) {
+    if (active.length === 0) {
       const chip = document.createElement("span");
-      chip.className = "breadcrumb-chip";
+      chip.className = "breadcrumb-item";
       chip.textContent = "National Benchmark (All 4,464 Students)";
       els.breadcrumbStrip.appendChild(chip);
     } else {
-      activeFilters.forEach((f) => {
+      active.forEach((f) => {
         const chip = document.createElement("span");
-        chip.className = "breadcrumb-chip";
-        chip.innerHTML = `${f.label} <button class="chip-remove" data-key="${f.key}">&times;</button>`;
+        chip.className = "breadcrumb-item";
+        chip.innerHTML = `${f.label} <button class="breadcrumb-remove" data-key="${f.key}">&times;</button>`;
         els.breadcrumbStrip.appendChild(chip);
       });
 
       // Clear all pill
       const clearBtn = document.createElement("button");
-      clearBtn.className = "sim-pill-btn";
+      clearBtn.className = "preset-pill";
       clearBtn.style.padding = "0.2rem 0.5rem";
       clearBtn.style.fontSize = "0.75rem";
       clearBtn.textContent = "Clear All";
       clearBtn.addEventListener("click", resetAllFilters);
       els.breadcrumbStrip.appendChild(clearBtn);
 
-      // Attach remove handler
-      els.breadcrumbStrip.querySelectorAll(".chip-remove").forEach((btn) => {
+      // Event listener for remove chip
+      els.breadcrumbStrip.querySelectorAll(".breadcrumb-remove").forEach((btn) => {
         btn.addEventListener("click", (e) => {
           const key = e.target.getAttribute("data-key");
           state.filters[key] = "All";
@@ -308,12 +350,6 @@
         });
       });
     }
-  }
-
-  function updateFilterSummary(filtered) {
-    const total = state.records.length;
-    const count = filtered.length;
-    els.filterSummary.textContent = `Showing ${count.toLocaleString()} of ${total.toLocaleString()} records (${((count / total) * 100).toFixed(1)}%)`;
   }
 
   // Render KPIs
@@ -342,12 +378,12 @@
     els.kpiCost.textContent = `${Math.round(avgCost).toLocaleString()} BDT`;
   }
 
-  // Initialize ZoomCharts-Style Dynamic Charts
+  // Initialize Charts with ZoomCharts In-Chart Click Behaviors
   function initCharts() {
     Chart.defaults.color = "#94a3b8";
-    Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    Chart.defaults.font.family = "'Plus Jakarta Sans', -apple-system, sans-serif";
 
-    // 1. Health Condition Chart (Interactive In-Chart Click Drill-Down)
+    // 1. Health Condition Chart
     const ctxHealth = document.getElementById("chart-health").getContext("2d");
     state.charts.health = new Chart(ctxHealth, {
       type: "bar",
@@ -357,8 +393,8 @@
           {
             label: "Depression Rate (%)",
             data: [0, 0, 0, 0],
-            backgroundColor: ["#ef4444", "#f97316", "#38bdf8", "#10b981"],
-            borderRadius: 4,
+            backgroundColor: ["#ff3b57", "#ff9100", "#38bdf8", "#00e676"],
+            borderRadius: 6,
           },
         ],
       },
@@ -369,8 +405,8 @@
         onClick: (event, elements) => {
           if (elements.length > 0) {
             const index = elements[0].index;
-            const clickedHealth = state.charts.health.data.labels[index];
-            state.filters.health = state.filters.health === clickedHealth ? "All" : clickedHealth;
+            const clicked = state.charts.health.data.labels[index];
+            state.filters.health = state.filters.health === clicked ? "All" : clicked;
             els.healthFilter.value = state.filters.health;
             state.currentPage = 1;
             render();
@@ -388,14 +424,14 @@
           x: {
             max: 100,
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "#1e293b" },
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
           },
           y: { grid: { display: false } },
         },
       },
     });
 
-    // 2. Division Prevalence Chart (Interactive In-Chart Click)
+    // 2. Division Prevalence Chart
     const ctxDivision = document.getElementById("chart-division").getContext("2d");
     state.charts.division = new Chart(ctxDivision, {
       type: "bar",
@@ -406,7 +442,7 @@
             label: "Prevalence (%)",
             data: [],
             backgroundColor: "#38bdf8",
-            borderRadius: 4,
+            borderRadius: 6,
           },
         ],
       },
@@ -416,8 +452,8 @@
         onClick: (event, elements) => {
           if (elements.length > 0) {
             const index = elements[0].index;
-            const clickedDiv = state.charts.division.data.labels[index];
-            state.filters.division = state.filters.division === clickedDiv ? "All" : clickedDiv;
+            const clicked = state.charts.division.data.labels[index];
+            state.filters.division = state.filters.division === clicked ? "All" : clicked;
             els.divisionFilter.value = state.filters.division;
             state.currentPage = 1;
             render();
@@ -435,13 +471,13 @@
           x: { grid: { display: false } },
           y: {
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "#1e293b" },
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
           },
         },
       },
     });
 
-    // 3. ZoomCharts Drill Down Combo PRO Style: Academic Semester Timeline
+    // 3. ZoomCharts Combo PRO: Academic Semester Timeline
     const ctxSemester = document.getElementById("chart-semester-combo").getContext("2d");
     state.charts.semesterCombo = new Chart(ctxSemester, {
       type: "bar",
@@ -452,13 +488,13 @@
             type: "line",
             label: "Depression Prevalence (%)",
             data: [],
-            borderColor: "#ef4444",
-            backgroundColor: "rgba(239, 68, 68, 0.08)",
+            borderColor: "#ff3b57",
+            backgroundColor: "rgba(255, 59, 87, 0.12)",
             borderWidth: 3,
             tension: 0.35,
             fill: true,
             yAxisID: "yRate",
-            pointBackgroundColor: "#ef4444",
+            pointBackgroundColor: "#ff3b57",
             pointRadius: 4,
           },
           {
@@ -468,7 +504,7 @@
             backgroundColor: "rgba(56, 189, 248, 0.4)",
             borderColor: "#38bdf8",
             borderWidth: 1,
-            borderRadius: 4,
+            borderRadius: 6,
             yAxisID: "yVolume",
           },
         ],
@@ -479,14 +515,14 @@
         onClick: (event, elements) => {
           if (elements.length > 0) {
             const index = elements[0].index;
-            const clickedSem = index.toString();
-            state.filters.semester = state.filters.semester === clickedSem ? "All" : clickedSem;
+            const clicked = index.toString();
+            state.filters.semester = state.filters.semester === clicked ? "All" : clicked;
             state.currentPage = 1;
             render();
           }
         },
         plugins: {
-          legend: { position: "top", labels: { boxWidth: 12 } },
+          legend: { position: "top", labels: { boxWidth: 12, font: { weight: "600" } } },
           tooltip: {
             callbacks: {
               afterBody: () => "Click bar to isolate this academic semester",
@@ -498,13 +534,13 @@
           yVolume: {
             type: "linear",
             position: "left",
-            title: { display: true, text: "Student Count" },
-            grid: { color: "#1e293b" },
+            title: { display: true, text: "Students Surveyed" },
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
           },
           yRate: {
             type: "linear",
             position: "right",
-            title: { display: true, text: "Depression %" },
+            title: { display: true, text: "Depression Rate %" },
             max: 50,
             ticks: { callback: (val) => `${val}%` },
             grid: { drawOnChartArea: false },
@@ -523,8 +559,8 @@
           {
             label: "Depression Rate (%)",
             data: [0, 0, 0, 0],
-            backgroundColor: ["#ef4444", "#f97316", "#f59e0b", "#10b981"],
-            borderRadius: 4,
+            backgroundColor: ["#ff3b57", "#ff9100", "#ffc400", "#00e676"],
+            borderRadius: 6,
           },
         ],
       },
@@ -544,7 +580,7 @@
           y: {
             max: 60,
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "#1e293b" },
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
           },
         },
       },
@@ -560,8 +596,8 @@
           {
             label: "Depression Prevalence (%)",
             data: [0, 0, 0, 0],
-            backgroundColor: ["#10b981", "#38bdf8", "#f59e0b", "#ef4444"],
-            borderRadius: 4,
+            backgroundColor: ["#00e676", "#38bdf8", "#ffc400", "#ff3b57"],
+            borderRadius: 6,
           },
         ],
       },
@@ -570,10 +606,10 @@
         maintainAspectRatio: false,
         onClick: (event, elements) => {
           if (elements.length > 0) {
-            const rawLabels = ["Home", "Hostel", "Mess", "Bachelor"];
+            const rawKeys = ["Home", "Hostel", "Mess", "Bachelor"];
             const index = elements[0].index;
-            const clickedLiving = rawLabels[index];
-            state.filters.living = state.filters.living === clickedLiving ? "All" : clickedLiving;
+            const clicked = rawKeys[index];
+            state.filters.living = state.filters.living === clicked ? "All" : clicked;
             state.currentPage = 1;
             render();
           }
@@ -590,7 +626,7 @@
           x: { grid: { display: false } },
           y: {
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "#1e293b" },
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
           },
         },
       },
@@ -608,7 +644,7 @@
             label: "Importance Weight",
             data: topFeatures.map((f) => (f.weight * 100).toFixed(1)),
             backgroundColor: "#38bdf8",
-            borderRadius: 4,
+            borderRadius: 6,
           },
         ],
       },
@@ -627,14 +663,14 @@
         scales: {
           x: {
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "#1e293b" },
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
           },
           y: { grid: { display: false } },
         },
       },
     });
 
-    // 7. Risk Tier Distribution (ZoomCharts Drill Down Donut PRO Style)
+    // 7. Risk Tier Donut
     const ctxTiers = document.getElementById("chart-tiers").getContext("2d");
     state.charts.tiers = new Chart(ctxTiers, {
       type: "doughnut",
@@ -643,7 +679,7 @@
         datasets: [
           {
             data: [0, 0, 0, 0],
-            backgroundColor: ["#ef4444", "#f97316", "#f59e0b", "#10b981"],
+            backgroundColor: ["#ff3b57", "#ff9100", "#ffc400", "#00e676"],
             borderWidth: 0,
           },
         ],
@@ -654,15 +690,15 @@
         onClick: (event, elements) => {
           if (elements.length > 0) {
             const index = elements[0].index;
-            const clickedTier = state.charts.tiers.data.labels[index];
-            state.filters.tier = state.filters.tier === clickedTier ? "All" : clickedTier;
+            const clicked = state.charts.tiers.data.labels[index];
+            state.filters.tier = state.filters.tier === clicked ? "All" : clicked;
             els.tierFilter.value = state.filters.tier;
             state.currentPage = 1;
             render();
           }
         },
         plugins: {
-          legend: { position: "right" },
+          legend: { position: "right", labels: { font: { weight: "600" } } },
           tooltip: {
             callbacks: {
               afterBody: () => "Click slice to filter cohort",
@@ -679,12 +715,12 @@
     if (records.length === 0) return;
 
     // 1. Health Condition Rates
-    const healthCategories = ["Critical", "Abnormal", "Normal", "Good"];
-    const healthRates = healthCategories.map((cat) => {
-      const subset = records.filter((r) => r.health === cat);
-      if (subset.length === 0) return 0;
-      const dep = subset.filter((r) => r.depression === 1).length;
-      return (dep / subset.length) * 100;
+    const healthCats = ["Critical", "Abnormal", "Normal", "Good"];
+    const healthRates = healthCats.map((cat) => {
+      const sub = records.filter((r) => r.health === cat);
+      if (sub.length === 0) return 0;
+      const dep = sub.filter((r) => r.depression === 1).length;
+      return (dep / sub.length) * 100;
     });
     state.charts.health.data.datasets[0].data = healthRates;
     state.charts.health.update();
@@ -692,9 +728,9 @@
     // 2. Division Rates
     const divisions = [...new Set(records.map((r) => r.division))].sort();
     const divRates = divisions.map((div) => {
-      const subset = records.filter((r) => r.division === div);
-      const dep = subset.filter((r) => r.depression === 1).length;
-      return (dep / subset.length) * 100;
+      const sub = records.filter((r) => r.division === div);
+      const dep = sub.filter((r) => r.depression === 1).length;
+      return (dep / sub.length) * 100;
     });
     state.charts.division.data.labels = divisions;
     state.charts.division.data.datasets[0].data = divRates;
@@ -704,11 +740,11 @@
     const semesterVolumes = [];
     const semesterDepRates = [];
     for (let sem = 0; sem <= 12; sem++) {
-      const semSubset = records.filter((r) => r.semester === sem);
-      semesterVolumes.push(semSubset.length);
-      if (semSubset.length > 0) {
-        const depCount = semSubset.filter((r) => r.depression === 1).length;
-        semesterDepRates.push((depCount / semSubset.length) * 100);
+      const sub = records.filter((r) => r.semester === sem);
+      semesterVolumes.push(sub.length);
+      if (sub.length > 0) {
+        const depCount = sub.filter((r) => r.depression === 1).length;
+        semesterDepRates.push((depCount / sub.length) * 100);
       } else {
         semesterDepRates.push(0);
       }
@@ -719,10 +755,10 @@
 
     // 4. Social Buffer Disparity
     const calcSocialRate = (rel, friends) => {
-      const subset = records.filter((r) => r.relationship === rel && r.friends === friends);
-      if (subset.length === 0) return 0;
-      const dep = subset.filter((r) => r.depression === 1).length;
-      return (dep / subset.length) * 100;
+      const sub = records.filter((r) => r.relationship === rel && r.friends === friends);
+      if (sub.length === 0) return 0;
+      const dep = sub.filter((r) => r.depression === 1).length;
+      return (dep / sub.length) * 100;
     };
     const socialRates = [
       calcSocialRate("Single", "No"),
@@ -736,10 +772,10 @@
     // 5. Living Style Breakdown
     const livingKeys = ["Home", "Hostel", "Mess", "Bachelor"];
     const livingRates = livingKeys.map((key) => {
-      const subset = records.filter((r) => r.living === key);
-      if (subset.length === 0) return 0;
-      const dep = subset.filter((r) => r.depression === 1).length;
-      return (dep / subset.length) * 100;
+      const sub = records.filter((r) => r.living === key);
+      if (sub.length === 0) return 0;
+      const dep = sub.filter((r) => r.depression === 1).length;
+      return (dep / sub.length) * 100;
     });
     state.charts.living.data.datasets[0].data = livingRates;
     state.charts.living.update();
@@ -759,10 +795,10 @@
   // WHAT-IF CLINICAL RISK SIMULATOR ENGINE
   // =========================================================================
   function attachSimulatorListeners() {
-    // Health Pills
-    els.simHealthPills.querySelectorAll(".sim-pill-btn").forEach((btn) => {
+    // Health Segmented Control
+    els.simHealthPills.querySelectorAll(".segment-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        els.simHealthPills.querySelectorAll(".sim-pill-btn").forEach((b) => b.classList.remove("active"));
+        els.simHealthPills.querySelectorAll(".segment-btn").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         state.simulator.health = btn.getAttribute("data-val");
         els.simValHealth.textContent = state.simulator.health;
@@ -770,10 +806,10 @@
       });
     });
 
-    // Relationship Pills
-    els.simRelPills.querySelectorAll(".sim-pill-btn").forEach((btn) => {
+    // Relationship Segmented Control
+    els.simRelPills.querySelectorAll(".segment-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        els.simRelPills.querySelectorAll(".sim-pill-btn").forEach((b) => b.classList.remove("active"));
+        els.simRelPills.querySelectorAll(".segment-btn").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         state.simulator.relationship = btn.getAttribute("data-val");
         els.simValRel.textContent = state.simulator.relationship;
@@ -781,13 +817,13 @@
       });
     });
 
-    // Friend Circle Pills
-    els.simFriendsPills.querySelectorAll(".sim-pill-btn").forEach((btn) => {
+    // Friends Segmented Control
+    els.simFriendsPills.querySelectorAll(".segment-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        els.simFriendsPills.querySelectorAll(".sim-pill-btn").forEach((b) => b.classList.remove("active"));
+        els.simFriendsPills.querySelectorAll(".segment-btn").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         state.simulator.friends = btn.getAttribute("data-val");
-        els.simValFriends.textContent = state.simulator.friends === "Yes" ? "Yes (Supported)" : "No (Isolated)";
+        els.simValFriends.textContent = state.simulator.friends === "Yes" ? "Supported (Has Friends)" : "Isolated (No Friends)";
         runSimulator();
       });
     });
@@ -795,7 +831,7 @@
     // CGPA Slider
     els.simSliderCgpa.addEventListener("input", (e) => {
       state.simulator.cgpa = parseFloat(e.target.value);
-      els.simValCgpa.textContent = state.simulator.cgpa.toFixed(2);
+      els.simValCgpa.textContent = `${state.simulator.cgpa.toFixed(2)} / 4.00`;
       runSimulator();
     });
 
@@ -807,7 +843,7 @@
     });
   }
 
-  // Real-time Risk Simulator Calculation based on ML Model Logic
+  // Real-time Risk Simulator Calculation based on Random Forest Machine Learning Model
   function runSimulator() {
     const s = state.simulator;
 
@@ -846,7 +882,7 @@
       p -= 0.01;
     }
 
-    // Clamp probability between 0.01 and 0.99
+    // Clamp probability between 0.015 and 0.985
     p = Math.max(0.015, Math.min(0.985, p));
 
     // Update UI Gauge
@@ -860,29 +896,29 @@
 
     // Tiers and Protocol
     let tierText = "Low Risk";
-    let tierBadgeClass = "badge-low";
-    let strokeColor = "#10b981";
+    let tierClass = "badge-low";
+    let strokeColor = "#00e676";
     let protocolText = "Routine Wellness Monitoring. Student shows solid protective health and social baselines.";
 
     if (p >= 0.85) {
       tierText = "Critical Risk";
-      tierBadgeClass = "badge-critical";
-      strokeColor = "#ef4444";
+      tierClass = "badge-critical";
+      strokeColor = "#ff3b57";
       protocolText = "Immediate Clinical Referral. Medical and mental health dispatch priority within 24 hours.";
     } else if (p >= 0.60) {
       tierText = "High Risk";
-      tierBadgeClass = "badge-high";
-      strokeColor = "#f97316";
+      tierClass = "badge-high";
+      strokeColor = "#ff9100";
       protocolText = "Counseling Center Outreach. Schedule proactive one-on-one session with student affairs counselor.";
     } else if (p >= 0.30) {
       tierText = "Moderate Risk";
-      tierBadgeClass = "badge-moderate";
-      strokeColor = "#f59e0b";
+      tierClass = "badge-moderate";
+      strokeColor = "#ffc400";
       protocolText = "Academic Advisor Check-in. Recommend peer support groups and monitor upcoming exam performance.";
     }
 
     els.simGaugeCircle.style.stroke = strokeColor;
-    els.simRiskBadge.className = `badge ${tierBadgeClass}`;
+    els.simRiskBadge.className = `tier-badge ${tierClass}`;
     els.simRiskBadge.textContent = tierText;
     els.simProtocolText.innerHTML = `<strong>Recommended Protocol:</strong> ${protocolText}`;
   }
@@ -901,7 +937,7 @@
 
     els.tableBody.innerHTML = "";
     if (pageRecords.length === 0) {
-      els.tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 2rem; color: #64748b;">No matching records found</td></tr>`;
+      els.tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 2.5rem; color: #64748b;">No matching student records found</td></tr>`;
     } else {
       pageRecords.forEach((r) => {
         const tr = document.createElement("tr");
@@ -913,13 +949,13 @@
 
         tr.innerHTML = `
           <td><strong>${r.id}</strong></td>
-          <td>${r.gender}, ${r.age}</td>
+          <td>${r.gender}, ${r.age} yrs</td>
           <td>${r.division}</td>
-          <td>${r.semester}</td>
+          <td>Sem ${r.semester}</td>
           <td>${r.cgpa.toFixed(2)}</td>
           <td>${r.health}</td>
           <td><strong>${(r.risk_score * 100).toFixed(1)}%</strong></td>
-          <td><span class="badge ${badgeClass}">${r.risk_tier}</span></td>
+          <td><span class="tier-badge ${badgeClass}">${r.risk_tier}</span></td>
           <td>${r.priority}</td>
         `;
         els.tableBody.appendChild(tr);
@@ -962,6 +998,6 @@
     document.body.removeChild(link);
   }
 
-  // Start application
+  // Start Application
   document.addEventListener("DOMContentLoaded", init);
 })();
