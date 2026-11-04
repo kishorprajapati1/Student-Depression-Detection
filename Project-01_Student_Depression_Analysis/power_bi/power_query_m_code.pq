@@ -1,6 +1,6 @@
 // =============================================================================
-// POWER QUERY (M CODE): ENTERPRISE STAR SCHEMA ARCHITECTURE
-// Project: Student Depression Analytics & Risk Modeling
+// POWER QUERY (M CODE): ENTERPRISE STAR SCHEMA WITH ML INTEGRATION
+// Project: Student Depression Analytics & Predictive Risk Modeling
 // =============================================================================
 
 // -----------------------------------------------------------------------------
@@ -9,7 +9,7 @@
 //          on any machine or environment without modifying transformation code.
 // -----------------------------------------------------------------------------
 let
-    pDataFilePath = "d:\PowerBi Projects\Project-01_Student_Depression_Analysis\data\processed\student_depression_cleaned.csv" 
+    pDataFilePath = "d:\PowerBi Projects\Project-01_Student_Depression_Analysis\data\processed\student_depression_ml_scored.csv" 
         meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 in
     pDataFilePath
@@ -47,7 +47,14 @@ let
         {"Cost_Bracket", type text},
         {"Cost_Bracket_Sort", Int64.Type},
         {"Health_Risk_Category", type text},
-        {"Health_Risk_Sort", Int64.Type}
+        {"Health_Risk_Sort", Int64.Type},
+        {"Predicted_Depression", Int64.Type},
+        {"Predicted_Depression_Label", type text},
+        {"Depression_Risk_Score", type number},
+        {"Risk_Tier", type text},
+        {"Risk_Tier_Sort", Int64.Type},
+        {"Intervention_Priority", type text},
+        {"Prediction_Outcome", type text}
     })
 in
     SetDataTypes
@@ -135,11 +142,35 @@ let
     MergeGeo = Table.NestedJoin(ExpandHealth, {"Home_division"}, Dim_Geography, {"Home_division"}, "Dim_Geography", JoinKind.LeftOuter),
     ExpandGeo = Table.ExpandTableColumn(MergeGeo, "Dim_Geography", {"Geography_Key"}, {"Geography_Key"}),
 
-    // Keep Only Surrogate Keys and Analytical Fact Attributes
+    // Fact Table Columns (including ML Risk Scores and Early Intervention Priority)
     SelectFactColumns = Table.SelectColumns(ExpandGeo, {
         "Student_ID", "Demographic_Key", "Academic_Key", "Health_Social_Key", "Geography_Key",
         "CGPA", "CGPA_Tier", "CGPA_Tier_Sort", "Cost_without_study", "Cost_Bracket", "Cost_Bracket_Sort",
-        "Depression", "Depression_Flag"
+        "Depression", "Depression_Flag",
+        "Predicted_Depression", "Predicted_Depression_Label", "Depression_Risk_Score",
+        "Risk_Tier", "Risk_Tier_Sort", "Intervention_Priority", "Prediction_Outcome"
     })
 in
     SelectFactColumns
+
+
+// -----------------------------------------------------------------------------
+// 8. ML DIMENSION: Dim_ML_Feature_Importance
+// Purpose: Enables Tornado & Bar visual of driving factors directly in Power BI
+// -----------------------------------------------------------------------------
+let
+    pFeatureFilePath = Text.Replace(pDataFilePath, "student_depression_ml_scored.csv", "ml_feature_importance.csv"),
+    Source = Csv.Document(
+        File.Contents(pFeatureFilePath),
+        [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.None]
+    ),
+    PromoteHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+    SetDataTypes = Table.TransformColumnTypes(PromoteHeaders, {
+        {"Feature_Key", Int64.Type},
+        {"Feature_Variable", type text},
+        {"Feature_Category", type text},
+        {"Importance_Weight", type number},
+        {"Importance_Rank", Int64.Type}
+    })
+in
+    SetDataTypes

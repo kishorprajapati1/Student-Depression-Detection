@@ -36,6 +36,13 @@ erDiagram
         int Cost_Bracket_Sort
         string Depression
         int Depression_Flag
+        int Predicted_Depression
+        string Predicted_Depression_Label
+        float Depression_Risk_Score
+        string Risk_Tier
+        int Risk_Tier_Sort
+        string Intervention_Priority
+        string Prediction_Outcome
     }
 
     Dim_Demographics {
@@ -68,6 +75,21 @@ erDiagram
         string Home_division
         string Zone
     }
+
+    Dim_ML_Feature_Importance {
+        int Feature_Key PK
+        string Feature_Variable
+        string Feature_Category
+        float Importance_Weight
+        int Importance_Rank
+    }
+
+    Dim_ML_Model_Metrics {
+        string Metric_Name PK
+        float Metric_Value
+        string Metric_Format
+        string Description
+    }
 ```
 
 ---
@@ -94,11 +116,14 @@ erDiagram
    - **Cross-filter direction**: Single
    - **Enforce Referent Integrity**: Enabled
 
+5. **`Dim_ML_Feature_Importance` & `Dim_ML_Model_Metrics`**:
+   - Standalone analytical reference tables for feature importance tornado charts and model governance cards (disconnected parameter/reporting tables, filtered dynamically via DAX).
+
 ---
 
 ## 4. Crucial "Sort By Column" Settings in Power BI Desktop
 
-If you do not configure **Sort by Column**, Power BI sorts textual categories alphabetically (e.g. `Early Stage` will sort after `Academic Stage`, or `High` will sort before `Low`). This looks unprofessional in a portfolio.
+If you do not configure **Sort by Column**, Power BI sorts textual categories alphabetically (e.g. `Critical Risk` or `High Risk` sorting out of clinical order). This looks unprofessional in a portfolio.
 
 Configure the following column properties in **Model View**:
 
@@ -106,6 +131,7 @@ Configure the following column properties in **Model View**:
 2. Select `Academic_Stage` $\to$ Set **Sort by column** = `Academic_Stage_Sort`
 3. Select `Cost_Bracket` $\to$ Set **Sort by column** = `Cost_Bracket_Sort`
 4. Select `Health_Risk_Category` $\to$ Set **Sort by column** = `Health_Risk_Sort`
+5. Select `Risk_Tier` $\to$ Set **Sort by column** = `Risk_Tier_Sort` (Low Risk $\to$ Moderate Risk $\to$ High Risk $\to$ Critical Risk)
 
 > [!TIP]
 > Always hide the `_Sort` columns in the Report View (`IsHidden = True`) so end-users never see redundant helper columns in the field picker.

@@ -1,0 +1,24 @@
+Feature_Key,Feature_Variable,Feature_Category,Importance_Weight,Importance_Rank
+1,Health_condition_Critical,Physical Health,0.4105,1
+2,Health_condition_Good,Physical Health,0.2001,2
+3,Health_condition_Normal,Physical Health,0.1835,3
+4,Relationship_status_Single,Social & Relationship,0.0645,4
+5,Relationship_status_In a Relationship,Social & Relationship,0.0427,5
+6,CGPA,Academic Performance,0.0188,6
+7,Marital_status_Unmarried,Social & Relationship,0.0183,7
+8,Cost_without_study,Financial Status,0.0149,8
+9,friend_circle_Yes,Social & Relationship,0.0122,9
+10,Family_background_Rich class,Financial Status,0.0086,10
+11,Current_semester,Academic Performance,0.006,11
+12,Age,Demographic / Geographic,0.0056,12
+13,Gender_Male,Demographic / Geographic,0.0035,13
+14,Home_division_Dhaka,Demographic / Geographic,0.0025,14
+15,Living_style_Family,Demographic / Geographic,0.002,15
+16,Family_background_Middle class,Financial Status,0.0018,16
+17,Home_division_Rangpur,Demographic / Geographic,0.0008,17
+18,Home_division_Khulna,Demographic / Geographic,0.0008,18
+19,Home_division_Sylhet,Demographic / Geographic,0.0008,19
+20,Home_division_Chittagong,Demographic / Geographic,0.0007,20
+21,Home_division_Rajshahi,Demographic / Geographic,0.0006,21
+22,Marital_status_Separated,Social & Relationship,0.0005,22
+23,Home_division_Mymensingh,Demographic / Geographic,0.0003,23

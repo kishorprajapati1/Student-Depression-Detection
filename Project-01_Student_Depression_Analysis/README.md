@@ -2,7 +2,8 @@
 
 ![Project Status](https://img.shields.io/badge/Status-Completed-success)
 ![Domain](https://img.shields.io/badge/Domain-Healthcare%20%7C%20Education%20Analytics-blue)
-![Tools](https://img.shields.io/badge/Stack-Python%20%7C%20SQL%20%7C%20Power%20BI%20%7C%20DAX-orange)
+![Stack](https://img.shields.io/badge/Stack-Python%20%7C%20Scikit--Learn%20%7C%20SQL%20%7C%20Power%20BI%20%7C%20DAX-orange)
+![ML Accuracy](https://img.shields.io/badge/Champion%20Model-Random%20Forest%20(97.6%25)-green)
 
 ## 📌 Executive Summary & Problem Statement
 University student mental health is a growing global concern, particularly in high-stress academic environments. This project analyzes a survey dataset of **4,464 university students** in Bangladesh to diagnose root causes of depressive symptoms, evaluate the protective influence of social networks, and engineer an interactive **Clinical Early-Warning Dashboard** in Power BI for academic counselors and university administrators.
@@ -28,11 +29,38 @@ University student mental health is a growing global concern, particularly in hi
 flowchart LR
     A["Raw Data (CSV/XLSX)\n4,464 Records"] --> B["Python Pipeline\nSchema & Quality Audit"]
     B --> C["Relational SQLite DB\nCleaned SQL Tables"]
-    C --> D["Power Query (M)\nETL & Star Schema"]
-    D --> E["Data Model (Kimball)\n1 Fact + 4 Dimensions"]
-    E --> F["DAX Measure Layer\n18+ Production Measures"]
-    F --> G["Power BI Dashboard\n3-Page Executive Suite"]
+    C --> ML["Scikit-Learn ML Pipeline\n5-Fold Stratified CV"]
+    ML --> D["Power Query (M)\nETL & Star Schema"]
+    D --> E["Data Model (Kimball)\n1 Fact + 6 Dimensions"]
+    E --> F["DAX Measure Layer\n30+ Production Measures"]
+    F --> G["Power BI Dashboard\n4-Page Executive Suite"]
 ```
+
+---
+
+## 🤖 Machine Learning Predictive Risk Engine
+
+To transition the dashboard from descriptive reporting to **prescriptive early-intervention**, we deployed a machine learning classification engine comparing **Logistic Regression** against **Random Forest** using **5-Fold Stratified Cross-Validation**:
+
+| Metric | Logistic Regression (Baseline) | Random Forest (Champion) | Clinical Significance |
+| :--- | :---: | :---: | :--- |
+| **Model Accuracy** | `97.13%` | **`97.65%`** | High generalization across folds |
+| **Model Precision** | `96.54%` | **`100.00%`** | **Zero false alarms**; counselors never harass healthy students |
+| **Model Recall** | `92.67%` | **`91.26%`** | Captures over 9 out of 10 students experiencing depression |
+| **F1 Score** | `0.9455` | **`0.9542`** | Robust balance of precision and recall |
+| **ROC-AUC** | `0.9912` | **`0.9945`** | Exceptional discriminative capability |
+
+### Actionable Risk Tiers & Counselor Triage
+Each student is scored with an out-of-fold `Depression_Risk_Score` ($0.000$ to $1.000$) and assigned an actionable protocol:
+- **Critical Risk ($\ge 85\%$)**: `405 students` $\to$ **Immediate Clinical Referral** (Campus Health Center)
+- **High Risk ($60\% - 85\%$)**: `290 students` $\to$ **Counseling Center Outreach**
+- **Moderate Risk ($30\% - 60\%$)**: `564 students` $\to$ **Academic Advisor Check-in**
+- **Low Risk ($< 30\%$)**: `3,205 students` $\to$ **Routine Wellness Monitoring**
+
+### Top Driving Factors (Feature Importance)
+1. **Physical Health Status**: Accounts for **79.4%** of tree split importance (`Critical Health` alone represents $41.1\%$).
+2. **Relationship Status**: Accounts for **10.7%** (Being `Single` vs `In a Relationship`).
+3. **Academic & Financial Context**: `CGPA` ($1.9\%$) and `Cost_without_study` ($1.5\%$) represent the remaining variance.
 
 ---
 

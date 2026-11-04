@@ -66,6 +66,23 @@ To make this project stand out in your portfolio, we avoid default Power BI visu
 
 ---
 
+### Page 4: Predictive Machine Learning & Model Governance (Prescriptive AI View)
+- **Header Strip**:
+  - Title: *AI Predictive Risk Engine & Model Performance Governance*
+  - Subtitle: *Random Forest Champion Model (5-Fold Stratified CV) | 97.6% Accuracy | 0.994 ROC-AUC*
+- **Top KPI Cards (Model Performance & Early Triage)**:
+  1. **Model Accuracy**: `97.6%` (Cross-validated out-of-fold benchmark)
+  2. **Model Precision**: `100.0%` (Zero false-alarm student misidentifications)
+  3. **Critical Risk Students**: `405` (Scored probability $\ge 85\%$ $\to$ Priority: Immediate Clinical Referral)
+  4. **High Risk Students**: `290` (Scored probability $60-85\%$ $\to$ Priority: Counseling Outreach)
+- **Visual Canvas (4-Quadrant AI Layout)**:
+  - **Visual 1 (Tornado / Horizontal Ranked Bar - Top Left)**: *Feature Importance Weights* (From `Dim_ML_Feature_Importance`): Physical Health (Critical = 41.1%, Good = 20.0%, Normal = 18.4%), Single Status (6.5%), In Relationship (4.3%), CGPA (1.9%), Living Cost (1.5%).
+  - **Visual 2 (Risk Probability Distribution Histogram - Top Right)**: Student count grouped by `Depression_Risk_Score` (0.0 to 1.0 in 0.1 bins), colored by `Risk_Tier`.
+  - **Visual 3 (Confusion Matrix Diagnostic Grid - Bottom Left)**: Matrix visual of Predicted vs Actual outcomes (`True Positive: 1,096`, `True Negative: 3,263`, `False Negative: 105`, `False Positive: 0`).
+  - **Visual 4 (Intervention Action Roster - Bottom Right)**: Filterable roster filtered to `Risk_Tier IN {'Critical Risk', 'High Risk'}` with direct drill-through to individual student profile for counselor case-management.
+
+---
+
 ## 3. Power BI Interactive Elements to Showcase in Portfolio
 
 1. **Custom Tooltip Pages**: Hovering over any Division or Health Condition bar pops up a mini card showing the CGPA gap, average living cost, and female vs male ratio.

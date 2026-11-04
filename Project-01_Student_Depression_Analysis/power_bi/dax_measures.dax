@@ -158,3 +158,99 @@ VAR _Rate = [Depression Prevalence %]
 RETURN
     // Red accent for elevated risk (> 30%), Amber for medium (25-30%), Slate Teal for low (< 25%)
     IF(_Rate >= 0.30, "#E63946", IF(_Rate >= 0.25, "#E76F51", "#2A9D8F"))
+
+
+// =============================================================================
+// FOLDER: 06 Machine Learning & Predictive Governance
+// =============================================================================
+
+ML Predicted Depressed Students = 
+CALCULATE(
+    COUNTROWS('Fact_Student_Assessment'),
+    'Fact_Student_Assessment'[Predicted_Depression] = 1
+)
+
+ML Predicted Prevalence % = 
+VAR _Predicted = [ML Predicted Depressed Students]
+VAR _Total = [Total Students]
+RETURN
+    DIVIDE(_Predicted, _Total, 0)
+
+ML Average Risk Probability = 
+AVERAGE('Fact_Student_Assessment'[Depression_Risk_Score])
+
+ML Critical Risk Count = 
+CALCULATE(
+    COUNTROWS('Fact_Student_Assessment'),
+    'Fact_Student_Assessment'[Risk_Tier] = "Critical Risk"
+)
+
+ML High Risk Count = 
+CALCULATE(
+    COUNTROWS('Fact_Student_Assessment'),
+    'Fact_Student_Assessment'[Risk_Tier] = "High Risk"
+)
+
+ML Immediate Referral Required = 
+CALCULATE(
+    COUNTROWS('Fact_Student_Assessment'),
+    'Fact_Student_Assessment'[Intervention_Priority] = "Immediate Clinical Referral"
+)
+
+ML Early Intervention Target Count = 
+[ML Critical Risk Count] + [ML High Risk Count]
+
+ML Model Accuracy Rate = 
+VAR _Correct = 
+    CALCULATE(
+        COUNTROWS('Fact_Student_Assessment'),
+        'Fact_Student_Assessment'[Prediction_Outcome] IN { "True Positive", "True Negative" }
+    )
+VAR _Total = [Total Students]
+RETURN
+    DIVIDE(_Correct, _Total, 0)
+
+ML Model Precision Rate = 
+VAR _TP = 
+    CALCULATE(
+        COUNTROWS('Fact_Student_Assessment'),
+        'Fact_Student_Assessment'[Prediction_Outcome] = "True Positive"
+    )
+VAR _FP = 
+    CALCULATE(
+        COUNTROWS('Fact_Student_Assessment'),
+        'Fact_Student_Assessment'[Prediction_Outcome] = "False Positive"
+    )
+RETURN
+    DIVIDE(_TP, _TP + _FP, 0)
+
+ML Model Recall Rate = 
+VAR _TP = 
+    CALCULATE(
+        COUNTROWS('Fact_Student_Assessment'),
+        'Fact_Student_Assessment'[Prediction_Outcome] = "True Positive"
+    )
+VAR _FN = 
+    CALCULATE(
+        COUNTROWS('Fact_Student_Assessment'),
+        'Fact_Student_Assessment'[Prediction_Outcome] = "False Negative"
+    )
+RETURN
+    DIVIDE(_TP, _TP + _FN, 0)
+
+ML Model F1 Score = 
+VAR _Precision = [ML Model Precision Rate]
+VAR _Recall = [ML Model Recall Rate]
+RETURN
+    DIVIDE(2 * _Precision * _Recall, _Precision + _Recall, 0)
+
+ML False Negative Rate (Safety Critical) = 
+VAR _FN = 
+    CALCULATE(
+        COUNTROWS('Fact_Student_Assessment'),
+        'Fact_Student_Assessment'[Prediction_Outcome] = "False Negative"
+    )
+VAR _ActualDepressed = [Depressed Students]
+RETURN
+    DIVIDE(_FN, _ActualDepressed, 0)
+

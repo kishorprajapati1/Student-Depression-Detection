@@ -32,5 +32,65 @@
         }
       }
     ]
+  },
+  {
+    "timestamp_utc": "2026-11-04T13:03:24.339368+00:00",
+    "total_projects": 1,
+    "projects": [
+      {
+        "project_id": "project_01",
+        "project_name": "Student Depression & Mental Health Analytics",
+        "status": "Healthy",
+        "metrics": {
+          "total_records": 4464,
+          "depressed_count": 1201,
+          "prevalence_pct": 26.9,
+          "avg_cgpa": 3.41,
+          "avg_monthly_cost_bdt": 11243.0,
+          "ml": {
+            "Accuracy": 0.9764792431417252,
+            "Precision": 1.0,
+            "Recall": 0.9125726141078838,
+            "F1_Score": 0.954153079569671,
+            "ROC_AUC": 0.9944812815889963,
+            "True_Positives": 1096.0,
+            "True_Negatives": 3263.0,
+            "False_Positives": 0.0,
+            "False_Negatives": 105.0,
+            "critical_risk_count": 405
+          }
+        }
+      }
+    ]
+  },
+  {
+    "timestamp_utc": "2026-11-04T13:03:33.782854+00:00",
+    "total_projects": 1,
+    "projects": [
+      {
+        "project_id": "project_01",
+        "project_name": "Student Depression & Mental Health Analytics",
+        "status": "Healthy",
+        "metrics": {
+          "total_records": 4464,
+          "depressed_count": 1201,
+          "prevalence_pct": 26.9,
+          "avg_cgpa": 3.41,
+          "avg_monthly_cost_bdt": 11243.0,
+          "ml": {
+            "Accuracy": 0.9764792431417252,
+            "Precision": 1.0,
+            "Recall": 0.9125726141078838,
+            "F1_Score": 0.954153079569671,
+            "ROC_AUC": 0.9944812815889963,
+            "True_Positives": 1096.0,
+            "True_Negatives": 3263.0,
+            "False_Positives": 0.0,
+            "False_Negatives": 105.0,
+            "critical_risk_count": 405
+          }
+        }
+      }
+    ]
   }
 ]

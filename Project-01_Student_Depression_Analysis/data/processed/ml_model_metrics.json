@@ -1,0 +1,38 @@
+{
+  "Champion_Model": "Random_Forest",
+  "Validation_Strategy": "5-Fold Stratified Cross-Validation",
+  "Comparison_Summary": {
+    "Logistic_Regression": {
+      "Accuracy": 0.971326309763532,
+      "Precision": 0.9653955829590416,
+      "Recall": 0.9267116182572614,
+      "F1_Score": 0.9455296141691745,
+      "ROC_AUC": 0.9912129191536755
+    },
+    "Random_Forest": {
+      "Accuracy": 0.9764792431417252,
+      "Precision": 1.0,
+      "Recall": 0.9125726141078838,
+      "F1_Score": 0.954153079569671,
+      "ROC_AUC": 0.9944812815889963
+    }
+  },
+  "Champion_Model_Performance": {
+    "Accuracy": 0.9764792431417252,
+    "Precision": 1.0,
+    "Recall": 0.9125726141078838,
+    "F1_Score": 0.954153079569671,
+    "ROC_AUC": 0.9944812815889963
+  },
+  "Confusion_Matrix": {
+    "True Negative": 3263,
+    "True Positive": 1096,
+    "False Negative": 105
+  },
+  "Risk_Tier_Distribution": {
+    "Low Risk": 3205,
+    "Moderate Risk": 564,
+    "Critical Risk": 405,
+    "High Risk": 290
+  }
+}

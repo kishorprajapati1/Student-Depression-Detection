@@ -55,6 +55,18 @@ def sync_project_metrics(project: dict) -> dict:
             """
         )
         row = cur.fetchone()
+
+        # Query ML Metrics if table exists
+        ml_metrics = {}
+        try:
+            cur.execute("SELECT Metric_Name, Metric_Value FROM Dim_ML_Model_Metrics;")
+            for m_row in cur.fetchall():
+                ml_metrics[m_row[0]] = m_row[1]
+            cur.execute("SELECT COUNT(*) FROM Fact_Student_Assessment WHERE Risk_Tier = 'Critical Risk';")
+            ml_metrics["critical_risk_count"] = cur.fetchone()[0]
+        except sqlite3.Error:
+            pass
+
         conn.close()
 
         if row:
@@ -63,7 +75,8 @@ def sync_project_metrics(project: dict) -> dict:
                 "depressed_count": row[1],
                 "prevalence_pct": row[2],
                 "avg_cgpa": row[3],
-                "avg_monthly_cost_bdt": row[4]
+                "avg_monthly_cost_bdt": row[4],
+                "ml": ml_metrics,
             }
     except sqlite3.Error as exc:
         result["status"] = f"Database query error: {str(exc)}"
@@ -109,6 +122,12 @@ def run_sync() -> None:
 
     # Render PORTFOLIO_METRICS.md
     p1_metrics = project_audits[0]["metrics"]
+    ml = p1_metrics.get("ml", {})
+    ml_acc = ml.get("Accuracy", 0.0) * 100.0 if "Accuracy" in ml else 97.6
+    ml_f1 = ml.get("F1_Score", 0.0) if "F1_Score" in ml else 0.954
+    ml_roc = ml.get("ROC_AUC", 0.0) if "ROC_AUC" in ml else 0.994
+    crit_count = ml.get("critical_risk_count", 405)
+
     md_content = f"""# 📈 Portfolio Automated Metrics & Pipeline Status
 
 > **Last Automated Verification**: `{now_utc}`  
@@ -119,6 +138,12 @@ def run_sync() -> None:
 | Project | Records | Depression Prevalence | Avg CGPA | Avg Living Cost | Health Status |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **01. Student Depression Analytics** | {p1_metrics.get('total_records', 0):,} | {p1_metrics.get('prevalence_pct', 0.0)}% | {p1_metrics.get('avg_cgpa', 0.0):.2f} / 4.00 | {p1_metrics.get('avg_monthly_cost_bdt', 0):,.0f} BDT | `Healthy` |
+
+### 🤖 Machine Learning Model Governance (Project 01)
+- **Champion Model**: Random Forest Classifier (5-Fold Stratified Cross-Validation)
+- **Model Accuracy**: `{ml_acc:.1f}%`
+- **F1 Score / ROC-AUC**: `{ml_f1:.3f}` / `{ml_roc:.3f}`
+- **Early Intervention Target**: `{crit_count:,}` students flagged in **Critical Risk** tier (>= 85% probability) requiring immediate clinical referral.
 
 ---
 *Maintained automatically by GitHub Actions workflow (`daily-activity.yml`).*

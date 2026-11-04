@@ -99,3 +99,53 @@
 > 1. **Automated Early Warning Triage**: Cross-reference university health clinic records with dormitory status. Any student diagnosed with chronic/severe physical health problems who lives alone as a bachelor should receive an automated outreach from student counseling.  
 > 2. **First-Year & Transition Mentorship**: Target incoming students (Semester 0-2) with peer buddy programs, as isolated singles have a 44% depression rate.  
 > 3. **Emergency Micro-Stipends**: Support lower-middle-class students facing living expense spikes (>12,000 BDT/month), alleviating the financial anxiety that correlates with higher depression."*
+
+---
+
+## Part 3: Machine Learning & Predictive Modeling Interview Defense
+
+### 11. "Why did you introduce Machine Learning into a Power BI project?"
+> *"Standard Power BI dashboards are descriptive—they tell leadership what happened in past surveys.  
+> By introducing a predictive machine learning pipeline, we elevated the solution from descriptive to **predictive and prescriptive analytics**. The model computes a personalized **Depression Risk Probability Score** (0.00 to 1.00) and assigns an actionable **Risk Tier** and **Intervention Priority** for every student.  
+> This allows university student affairs not merely to look at historical charts, but to actively prioritize counselor outreach for the 405 students flagged in the **Critical Risk Tier** ($\ge 85\%$ probability)."*
+
+---
+
+### 12. "Which ML model did you choose, and why did you pick it over complex deep learning?"
+> *"We implemented a reproducible model tournament using **5-Fold Stratified Cross-Validation**, comparing an interpretable **Logistic Regression** baseline against a **Random Forest Classifier**.  
+> Random Forest achieved champion performance:  
+> - **Accuracy**: 97.6% (vs 97.1% for Logistic Regression)  
+> - **Precision**: 100.0% (Zero false alarms on positive depression prediction)  
+> - **Recall**: 91.3% (Captures over 9 out of 10 depressed students)  
+> - **ROC-AUC**: 0.994  
+> 
+> Why Random Forest over Neural Networks / Deep Learning?  
+> 1. **Explainability & Stakeholder Trust**: Deep neural networks are black boxes. In mental health and higher education, counselors need to know *why* a student is flagged. Random Forest provides clear, mathematically sound Gini feature importances.  
+> 2. **Tabular Data Superiority**: For structured tabular survey datasets under 100,000 records, tree ensembles consistently outperform deep learning with faster training, fewer hyperparameters, and zero risk of vanishing gradients.  
+> 3. **Non-Linear Interaction Modeling**: Depression is driven by compound risks (e.g. poor health compounded by living alone without friends). Random Forest natively models complex feature interactions without manual polynomial feature engineering."*
+
+---
+
+### 13. "Is Machine Learning strictly necessary, or could this be done with a simpler rule-based scoring system?"
+> *"A simple scorecard (e.g. add 3 points for Critical health, add 2 points for living alone) can approximate risk and is easier to write in DAX.  
+> However, a rule-based scorecard has three fatal limitations that ML solves:  
+> 1. **Arbitrary Weights**: A human guessing weights will over- or under-value factors (e.g. guessing that CGPA is more important than relationship status, whereas the data proves relationship status is 3x more predictive than CGPA). ML derives mathematically optimal feature weights.  
+> 2. **Calibrated Probabilities**: Rule scores produce arbitrary numbers (like 12 out of 20). Machine learning outputs true calibrated probability ($P(Depression | X)$), allowing clinical thresholds based on resource availability (e.g. 'We only have capacity for 400 clinic visits, so filter to probability $\ge 0.85$').  
+> 3. **Validation & Auditing**: With ML, we can rigorously prove out-of-fold generalizability with confusion matrices, precision-recall curves, and ROC-AUC metrics."*
+
+---
+
+### 14. "How did you prevent data leakage and evaluate model performance reliably?"
+> *"I implemented three rigorous data hygiene practices:  
+> 1. **Stratified 5-Fold Cross-Validation**: The target variable has a 26.9% positive class distribution. Stratified folding guarantees that every training and validation split maintains the exact 26.9% class ratio.  
+> 2. **Pipeline Encapsulation**: Numerical scaling (`StandardScaler`) and one-hot encoding (`OneHotEncoder`) were wrapped inside an `sklearn.compose.ColumnTransformer` and pipeline object. Transformers were fit exclusively on training folds, eliminating data leakage from the test sets.  
+> 3. **Out-of-Fold Probability Scoring**: When scoring the fact table for Power BI visualization, predictions were generated strictly via `cross_val_predict`, ensuring no student was scored using a model trained on their own survey record."*
+
+---
+
+### 15. "How does Power BI consume the Machine Learning results?"
+> *"Rather than running Python scripts live inside Power BI Desktop—which disables automatic scheduled refreshes in Power BI Service and causes latency—we used an **upstream decoupled architecture**:  
+> 1. The Python ML pipeline executes upstream in CI/CD, generating scored fact records and two analytical reference tables (`Dim_ML_Feature_Importance` and `Dim_ML_Model_Metrics`).  
+> 2. Power BI consumes the processed Star Schema via standard Power Query M ingestion.  
+> 3. The dashboard features dedicated ML DAX measures (`[Model Accuracy]`, `[Critical Risk Student Count]`, `[Early Intervention Target Count]`) and a dedicated **Page 4: Predictive Risk & Model Governance** featuring Tornado charts, Confusion Matrix grids, and interactive risk-tier slicers."*
+
