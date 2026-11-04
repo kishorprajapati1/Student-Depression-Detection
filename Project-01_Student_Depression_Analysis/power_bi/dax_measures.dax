@@ -1,0 +1,160 @@
+// =============================================================================
+// DAX MEASURES REPOSITORY (PRODUCTION GRADE)
+// Project: Student Depression Analytics & Risk Modeling
+// Guidelines: All measures use VAR/RETURN, DIVIDE with safe fallback,
+//             and strict explicit aggregation.
+// =============================================================================
+
+// =============================================================================
+// FOLDER: 01 Key Metrics & Counts
+// =============================================================================
+
+Total Students = 
+COUNTROWS('Fact_Student_Assessment')
+
+Depressed Students = 
+CALCULATE(
+    COUNTROWS('Fact_Student_Assessment'),
+    'Fact_Student_Assessment'[Depression] = "Yes"
+)
+
+Non-Depressed Students = 
+CALCULATE(
+    COUNTROWS('Fact_Student_Assessment'),
+    'Fact_Student_Assessment'[Depression] = "No"
+)
+
+High Risk Cohort Count = 
+CALCULATE(
+    COUNTROWS('Fact_Student_Assessment'),
+    'Fact_Student_Assessment'[Health_condition] IN { "Critical", "Abnormal" },
+    'Fact_Student_Assessment'[friend_circle] = "No"
+)
+
+
+// =============================================================================
+// FOLDER: 02 Prevalence & Percentages
+// =============================================================================
+
+Depression Prevalence % = 
+VAR _Depressed = [Depressed Students]
+VAR _Total = [Total Students]
+RETURN
+    DIVIDE(_Depressed, _Total, 0)
+
+Non-Depression Prevalence % = 
+VAR _NonDepressed = [Non-Depressed Students]
+VAR _Total = [Total Students]
+RETURN
+    DIVIDE(_NonDepressed, _Total, 0)
+
+Overall Cohort Benchmark % = 
+VAR _AllDepressed = 
+    CALCULATE(
+        [Depressed Students], 
+        ALLSELECTED('Fact_Student_Assessment')
+    )
+VAR _AllTotal = 
+    CALCULATE(
+        [Total Students], 
+        ALLSELECTED('Fact_Student_Assessment')
+    )
+RETURN
+    DIVIDE(_AllDepressed, _AllTotal, 0)
+
+Variance vs Benchmark % = 
+VAR _CurrentRate = [Depression Prevalence %]
+VAR _Benchmark = [Overall Cohort Benchmark %]
+RETURN
+    _CurrentRate - _Benchmark
+
+
+// =============================================================================
+// FOLDER: 03 Academic & Financial Insights
+// =============================================================================
+
+Average CGPA = 
+AVERAGE('Fact_Student_Assessment'[CGPA])
+
+Average CGPA (Depressed) = 
+CALCULATE(
+    AVERAGE('Fact_Student_Assessment'[CGPA]),
+    'Fact_Student_Assessment'[Depression] = "Yes"
+)
+
+Average CGPA (Non-Depressed) = 
+CALCULATE(
+    AVERAGE('Fact_Student_Assessment'[CGPA]),
+    'Fact_Student_Assessment'[Depression] = "No"
+)
+
+CGPA Disparity Gap = 
+[Average CGPA (Non-Depressed)] - [Average CGPA (Depressed)]
+
+Average Monthly Living Cost = 
+AVERAGE('Fact_Student_Assessment'[Cost_without_study])
+
+Average Monthly Living Cost (Depressed) = 
+CALCULATE(
+    AVERAGE('Fact_Student_Assessment'[Cost_without_study]),
+    'Fact_Student_Assessment'[Depression] = "Yes"
+)
+
+Average Monthly Living Cost (Non-Depressed) = 
+CALCULATE(
+    AVERAGE('Fact_Student_Assessment'[Cost_without_study]),
+    'Fact_Student_Assessment'[Depression] = "No"
+)
+
+
+// =============================================================================
+// FOLDER: 04 Social & Risk Drivers
+// =============================================================================
+
+Depression Rate (No Friends) = 
+CALCULATE(
+    [Depression Prevalence %],
+    'Fact_Student_Assessment'[friend_circle] = "No"
+)
+
+Depression Rate (With Friends) = 
+CALCULATE(
+    [Depression Prevalence %],
+    'Fact_Student_Assessment'[friend_circle] = "Yes"
+)
+
+Social Isolation Risk Multiplier = 
+VAR _NoFriendsRate = [Depression Rate (No Friends)]
+VAR _FriendsRate = [Depression Rate (With Friends)]
+RETURN
+    DIVIDE(_NoFriendsRate, _FriendsRate, 0)
+
+Depression Rate (Single) = 
+CALCULATE(
+    [Depression Prevalence %],
+    'Fact_Student_Assessment'[Relationship_status] = "Single"
+)
+
+Depression Rate (In Relationship) = 
+CALCULATE(
+    [Depression Prevalence %],
+    'Fact_Student_Assessment'[Relationship_status] = "In a Relationship"
+)
+
+
+// =============================================================================
+// FOLDER: 05 Dynamic UI & Visual Helpers
+// =============================================================================
+
+Dynamic Dashboard Subtitle = 
+VAR _Total = [Total Students]
+VAR _Rate = FORMAT([Depression Prevalence %], "0.0%")
+VAR _DivisionFilter = SELECTEDVALUE('Fact_Student_Assessment'[Home_division], "All Divisions")
+RETURN
+    "Cohort: " & _DivisionFilter & " | Sample Size: " & FORMAT(_Total, "#,##0") & " Students | Depression Prevalence: " & _Rate
+
+KPI Card Color (Prevalence) = 
+VAR _Rate = [Depression Prevalence %]
+RETURN
+    // Red accent for elevated risk (> 30%), Amber for medium (25-30%), Slate Teal for low (< 25%)
+    IF(_Rate >= 0.30, "#E63946", IF(_Rate >= 0.25, "#E76F51", "#2A9D8F"))

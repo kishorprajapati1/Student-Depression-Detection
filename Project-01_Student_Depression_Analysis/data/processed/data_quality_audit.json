@@ -1,0 +1,24 @@
+{
+  "total_rows_inspected": 4464,
+  "null_value_counts": {
+    "Gender": 0,
+    "Age": 0,
+    "Family_background": 0,
+    "Relationship_status": 0,
+    "Marital_status": 0,
+    "Living_style": 0,
+    "Current_semester": 0,
+    "CGPA": 0,
+    "friend_circle": 0,
+    "Health_condition": 0,
+    "Cost_without_study": 0,
+    "Home_division": 0,
+    "Depression": 0
+  },
+  "whitespace_trimmed_count": 0,
+  "out_of_range_age": 0,
+  "out_of_range_cgpa": 0,
+  "out_of_range_semester": 0,
+  "zero_cost_count": 2,
+  "logical_conflict_relationship_marital": 201
+}

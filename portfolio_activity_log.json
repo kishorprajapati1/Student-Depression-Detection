@@ -1,0 +1,18 @@
+[
+  {
+    "last_sync_utc": "2026-11-04T12:35:13.571705+00:00",
+    "total_active_projects": 1,
+    "projects_audit": [
+      {
+        "project_id": "project_01",
+        "project_name": "Student Depression & Mental Health Analytics",
+        "status": "Healthy",
+        "metrics": {
+          "total_records": 4464,
+          "depressed_count": 1201,
+          "prevalence_pct": 26.9
+        }
+      }
+    ]
+  }
+]

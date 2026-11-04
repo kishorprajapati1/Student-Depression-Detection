@@ -1,0 +1,37 @@
+name: Daily Portfolio Sync & Continuous GitHub Activity
+
+on:
+  schedule:
+    # Runs every day at 06:00 UTC (11:30 AM IST)
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI anytime
+
+permissions:
+  contents: write
+
+jobs:
+  daily-sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run Data Quality Audit & Daily Portfolio Sync
+        run: |
+          python scripts/daily_portfolio_sync.py
+
+      - name: Commit and Push Activity
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action [Daily Portfolio Bot]"
+          git add portfolio_activity_log.json PORTFOLIO_METRICS.md
+          git commit -m "chore(auto): daily data pipeline validation & metric refresh [$(date -u +'%Y-%m-%d')]" || echo "No changes to commit"
+          git push
