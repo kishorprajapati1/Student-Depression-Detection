@@ -24,25 +24,29 @@ The interactive web dashboard located in the `docs/` directory is an enterprise-
 In PowerShell from `d:\PowerBi Projects`:
 
 ```powershell
-# If you have not yet linked your remote repository:
-git remote add origin https://github.com/<your-username>/powerbi-portfolio.git
-git branch -M main
+# Remote origin configured:
+git remote -v
+# Output should show:
+# origin  https://github.com/kishorprajapati1/Student-Depression-Detection.git (fetch)
+# origin  https://github.com/kishorprajapati1/Student-Depression-Detection.git (push)
+
+# Push to GitHub main branch:
 git push -u origin main
 ```
 
 ---
 
 ### Step 2: Enable GitHub Pages (Free Hosting)
-1. Go to your repository on GitHub: `https://github.com/<your-username>/powerbi-portfolio`.
+1. Go to your repository on GitHub: `https://github.com/kishorprajapati1/Student-Depression-Detection`.
 2. Click **Settings** (top navigation tab).
 3. In the left sidebar, click **Pages** (under the "Code and automation" section).
 4. Under **Build and deployment**:
    - **Source**: Select `Deploy from a branch`.
-   - **Branch**: Select `main` (or `master`).
+   - **Branch**: Select `main`.
    - **Folder**: Select `/docs` (this serves the `docs/index.html` application).
 5. Click **Save**.
 6. Within 1 to 2 minutes, GitHub will publish your interactive dashboard at:
-   `https://<your-username>.github.io/powerbi-portfolio/`
+   `https://kishorprajapati1.github.io/Student-Depression-Detection/`
 
 ---
 
@@ -60,7 +64,7 @@ Add this code into your portfolio project page on `kishorprajapati.com`:
   
   <div class="dashboard-container" style="position: relative; width: 100%; height: 920px; border-radius: 8px; overflow: hidden; border: 1px solid #334155;">
     <iframe 
-      src="https://<your-username>.github.io/powerbi-portfolio/" 
+      src="https://kishorprajapati1.github.io/Student-Depression-Detection/" 
       style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
       title="Student Mental Health Analytics Dashboard"
       loading="lazy">
@@ -89,10 +93,10 @@ On your main portfolio homepage or CV projects section:
     <span>Interactive Web App</span>
   </div>
   <div class="project-links">
-    <a href="https://<your-username>.github.io/powerbi-portfolio/" target="_blank" class="btn btn-primary">
+    <a href="https://kishorprajapati1.github.io/Student-Depression-Detection/" target="_blank" class="btn btn-primary">
       Launch Live Interactive Dashboard
     </a>
-    <a href="https://github.com/<your-username>/powerbi-portfolio" target="_blank" class="btn btn-outline">
+    <a href="https://github.com/kishorprajapati1/Student-Depression-Detection" target="_blank" class="btn btn-outline">
       View GitHub Repository
     </a>
   </div>

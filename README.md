@@ -1,7 +1,14 @@
-# 💼 Enterprise Power BI & Business Intelligence Portfolio Hub
+# Enterprise Power BI & Business Intelligence Portfolio Hub
 
-> **Author**: Aspiring Power BI Developer / BI Analyst (Transitioning from Support Engineering)  
-> **Repository Purpose**: Multi-project enterprise analytics portfolio featuring robust data pipelines, dimensional modeling, production-grade DAX, and automated CI/CD synchronization.
+> **Author**: Kishor Prajapati ([kishorprajapati.com](https://kishorprajapati.com))  
+> **Role Target**: Power BI Developer / BI Analyst (Transitioning from Support Engineering)  
+> **Repository Purpose**: Multi-project enterprise analytics portfolio featuring robust data pipelines, Kimball dimensional modeling, production-grade DAX, Scikit-Learn predictive modeling, interactive web visualizations, and automated CI/CD synchronization.
+
+---
+
+## Interactive Live Dashboards
+- **Project 01 Live Web Dashboard**: [https://kishorprajapati1.github.io/Student-Depression-Detection/](https://kishorprajapati1.github.io/Student-Depression-Detection/)
+- **Portfolio Website**: [https://kishorprajapati.com](https://kishorprajapati.com)
 
 ---
 
@@ -75,7 +82,6 @@ d:\PowerBi Projects/
 
 ---
 
-## 📬 Contact & Portfolio Links
-- **LinkedIn**: *[Add your LinkedIn profile link]*
-- **Portfolio Website**: *[Add your personal portfolio website link]*
-- **GitHub**: *[Add your GitHub profile link]*
+## Contact & Portfolio Links
+- **Portfolio Website**: [kishorprajapati.com](https://kishorprajapati.com)
+- **GitHub Repository**: [github.com/kishorprajapati1/Student-Depression-Detection](https://github.com/kishorprajapati1/Student-Depression-Detection)

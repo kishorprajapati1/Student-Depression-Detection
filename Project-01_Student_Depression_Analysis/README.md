@@ -145,8 +145,8 @@ Project-01_Student_Depression_Analysis/
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/<your-username>/powerbi-portfolio.git
-   cd powerbi-portfolio/Project-01_Student_Depression_Analysis
+   git clone https://github.com/kishorprajapati1/Student-Depression-Detection.git
+   cd Student-Depression-Detection/Project-01_Student_Depression_Analysis
    ```
 2. **Execute the Data Quality & Cleaning Pipeline**:
    ```bash
