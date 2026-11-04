@@ -1,6 +1,6 @@
 /**
  * Project 01: Student Mental Health & Predictive Risk System
- * Controller & Reactive Visual Engine
+ * Controller & ZoomCharts-Inspired Reactive Visual Engine
  * Author: Kishor Prajapati (kishorprajapati.com)
  * No Emojis, Clean Clinical Architecture
  */
@@ -19,11 +19,22 @@
       health: "All",
       tier: "All",
       stage: "All",
+      semester: "All",
+      living: "All",
     },
     searchQuery: "",
     currentPage: 1,
     pageSize: 15,
     charts: {},
+
+    // Simulator State
+    simulator: {
+      health: "Normal",
+      relationship: "Single",
+      friends: "Yes",
+      cgpa: 3.40,
+      cost: 10000,
+    },
   };
 
   // DOM Elements
@@ -35,6 +46,8 @@
     stageFilter: document.getElementById("filter-stage"),
     btnReset: document.getElementById("btn-reset-filters"),
     filterSummary: document.getElementById("filter-summary-text"),
+    breadcrumbStrip: document.getElementById("breadcrumb-strip"),
+    btnFullscreen: document.getElementById("btn-fullscreen"),
 
     kpiTotal: document.getElementById("kpi-total-val"),
     kpiPrevalence: document.getElementById("kpi-prev-val"),
@@ -51,14 +64,32 @@
     pageInfo: document.getElementById("page-info"),
     btnPrevPage: document.getElementById("btn-prev-page"),
     btnNextPage: document.getElementById("btn-next-page"),
+
+    // Simulator Elements
+    simHealthPills: document.getElementById("sim-pills-health"),
+    simRelPills: document.getElementById("sim-pills-rel"),
+    simFriendsPills: document.getElementById("sim-pills-friends"),
+    simSliderCgpa: document.getElementById("sim-slider-cgpa"),
+    simSliderCost: document.getElementById("sim-slider-cost"),
+    simValHealth: document.getElementById("sim-val-health"),
+    simValRel: document.getElementById("sim-val-rel"),
+    simValFriends: document.getElementById("sim-val-friends"),
+    simValCgpa: document.getElementById("sim-val-cgpa"),
+    simValCost: document.getElementById("sim-val-cost"),
+    simRiskPct: document.getElementById("sim-risk-pct"),
+    simRiskBadge: document.getElementById("sim-risk-badge"),
+    simGaugeCircle: document.getElementById("sim-gauge-circle"),
+    simProtocolText: document.getElementById("sim-protocol-text"),
   };
 
-  // Initialize
+  // Initialize Application
   function init() {
     populateFilterOptions();
     attachEventListeners();
+    attachSimulatorListeners();
     initCharts();
     render();
+    runSimulator();
   }
 
   // Populate Dropdown Options
@@ -105,21 +136,17 @@
       render();
     });
 
-    els.btnReset.addEventListener("click", () => {
-      state.filters.division = "All";
-      state.filters.gender = "All";
-      state.filters.health = "All";
-      state.filters.tier = "All";
-      state.filters.stage = "All";
-      state.searchQuery = "";
-      els.divisionFilter.value = "All";
-      els.genderFilter.value = "All";
-      els.healthFilter.value = "All";
-      els.tierFilter.value = "All";
-      els.stageFilter.value = "All";
-      els.tableSearch.value = "";
-      state.currentPage = 1;
-      render();
+    els.btnReset.addEventListener("click", resetAllFilters);
+
+    // Fullscreen Mode
+    els.btnFullscreen.addEventListener("click", () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+        els.btnFullscreen.textContent = "Exit Fullscreen";
+      } else {
+        document.exitFullscreen().catch(() => {});
+        els.btnFullscreen.textContent = "Fullscreen View";
+      }
     });
 
     // Tab Navigation
@@ -162,6 +189,26 @@
     els.btnExportCsv.addEventListener("click", exportFilteredCsv);
   }
 
+  function resetAllFilters() {
+    state.filters.division = "All";
+    state.filters.gender = "All";
+    state.filters.health = "All";
+    state.filters.tier = "All";
+    state.filters.stage = "All";
+    state.filters.semester = "All";
+    state.filters.living = "All";
+    state.searchQuery = "";
+
+    els.divisionFilter.value = "All";
+    els.genderFilter.value = "All";
+    els.healthFilter.value = "All";
+    els.tierFilter.value = "All";
+    els.stageFilter.value = "All";
+    els.tableSearch.value = "";
+    state.currentPage = 1;
+    render();
+  }
+
   // Filter Engine
   function getFilteredRecords() {
     return state.records.filter((r) => {
@@ -169,6 +216,8 @@
       if (state.filters.gender !== "All" && r.gender !== state.filters.gender) return false;
       if (state.filters.health !== "All" && r.health !== state.filters.health) return false;
       if (state.filters.tier !== "All" && r.risk_tier !== state.filters.tier) return false;
+      if (state.filters.semester !== "All" && r.semester !== parseInt(state.filters.semester, 10)) return false;
+      if (state.filters.living !== "All" && r.living !== state.filters.living) return false;
 
       if (state.filters.stage !== "All") {
         if (state.filters.stage === "Early" && r.semester > 3) return false;
@@ -191,10 +240,74 @@
   // Master Render Cycle
   function render() {
     const filtered = getFilteredRecords();
+    renderBreadcrumbs();
     renderKPIs(filtered);
     updateCharts(filtered);
     renderTable();
     updateFilterSummary(filtered);
+  }
+
+  // ZoomCharts Style Interactive Breadcrumb Strip
+  function renderBreadcrumbs() {
+    const activeFilters = [];
+
+    if (state.filters.division !== "All") {
+      activeFilters.push({ key: "division", label: `Division: ${state.filters.division}` });
+    }
+    if (state.filters.health !== "All") {
+      activeFilters.push({ key: "health", label: `Health: ${state.filters.health}` });
+    }
+    if (state.filters.tier !== "All") {
+      activeFilters.push({ key: "tier", label: `Tier: ${state.filters.tier}` });
+    }
+    if (state.filters.gender !== "All") {
+      activeFilters.push({ key: "gender", label: `Gender: ${state.filters.gender}` });
+    }
+    if (state.filters.stage !== "All") {
+      activeFilters.push({ key: "stage", label: `Stage: ${state.filters.stage}` });
+    }
+    if (state.filters.semester !== "All") {
+      activeFilters.push({ key: "semester", label: `Semester ${state.filters.semester}` });
+    }
+    if (state.filters.living !== "All") {
+      activeFilters.push({ key: "living", label: `Living: ${state.filters.living}` });
+    }
+
+    els.breadcrumbStrip.innerHTML = '<span class="breadcrumb-label">Active Focus:</span>';
+
+    if (activeFilters.length === 0) {
+      const chip = document.createElement("span");
+      chip.className = "breadcrumb-chip";
+      chip.textContent = "National Benchmark (All 4,464 Students)";
+      els.breadcrumbStrip.appendChild(chip);
+    } else {
+      activeFilters.forEach((f) => {
+        const chip = document.createElement("span");
+        chip.className = "breadcrumb-chip";
+        chip.innerHTML = `${f.label} <button class="chip-remove" data-key="${f.key}">&times;</button>`;
+        els.breadcrumbStrip.appendChild(chip);
+      });
+
+      // Clear all pill
+      const clearBtn = document.createElement("button");
+      clearBtn.className = "sim-pill-btn";
+      clearBtn.style.padding = "0.2rem 0.5rem";
+      clearBtn.style.fontSize = "0.75rem";
+      clearBtn.textContent = "Clear All";
+      clearBtn.addEventListener("click", resetAllFilters);
+      els.breadcrumbStrip.appendChild(clearBtn);
+
+      // Attach remove handler
+      els.breadcrumbStrip.querySelectorAll(".chip-remove").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const key = e.target.getAttribute("data-key");
+          state.filters[key] = "All";
+          if (els[`${key}Filter`]) els[`${key}Filter`].value = "All";
+          state.currentPage = 1;
+          render();
+        });
+      });
+    }
   }
 
   function updateFilterSummary(filtered) {
@@ -229,12 +342,12 @@
     els.kpiCost.textContent = `${Math.round(avgCost).toLocaleString()} BDT`;
   }
 
-  // Initialize Chart.js
+  // Initialize ZoomCharts-Style Dynamic Charts
   function initCharts() {
     Chart.defaults.color = "#94a3b8";
     Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
-    // 1. Health Condition Chart
+    // 1. Health Condition Chart (Interactive In-Chart Click Drill-Down)
     const ctxHealth = document.getElementById("chart-health").getContext("2d");
     state.charts.health = new Chart(ctxHealth, {
       type: "bar",
@@ -253,11 +366,21 @@
         indexAxis: "y",
         responsive: true,
         maintainAspectRatio: false,
+        onClick: (event, elements) => {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const clickedHealth = state.charts.health.data.labels[index];
+            state.filters.health = state.filters.health === clickedHealth ? "All" : clickedHealth;
+            els.healthFilter.value = state.filters.health;
+            state.currentPage = 1;
+            render();
+          }
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (ctx) => ` Depression Rate: ${ctx.raw.toFixed(1)}%`,
+              label: (ctx) => ` Depression Rate: ${ctx.raw.toFixed(1)}% (Click to filter)`,
             },
           },
         },
@@ -272,7 +395,7 @@
       },
     });
 
-    // 2. Division Prevalence Chart
+    // 2. Division Prevalence Chart (Interactive In-Chart Click)
     const ctxDivision = document.getElementById("chart-division").getContext("2d");
     state.charts.division = new Chart(ctxDivision, {
       type: "bar",
@@ -290,11 +413,21 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        onClick: (event, elements) => {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const clickedDiv = state.charts.division.data.labels[index];
+            state.filters.division = state.filters.division === clickedDiv ? "All" : clickedDiv;
+            els.divisionFilter.value = state.filters.division;
+            state.currentPage = 1;
+            render();
+          }
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (ctx) => ` Depression Rate: ${ctx.raw.toFixed(1)}%`,
+              label: (ctx) => ` Depression Rate: ${ctx.raw.toFixed(1)}% (Click to filter)`,
             },
           },
         },
@@ -308,7 +441,79 @@
       },
     });
 
-    // 3. Social Isolation Disparity Chart
+    // 3. ZoomCharts Drill Down Combo PRO Style: Academic Semester Timeline
+    const ctxSemester = document.getElementById("chart-semester-combo").getContext("2d");
+    state.charts.semesterCombo = new Chart(ctxSemester, {
+      type: "bar",
+      data: {
+        labels: Array.from({ length: 13 }, (_, i) => `Sem ${i}`),
+        datasets: [
+          {
+            type: "line",
+            label: "Depression Prevalence (%)",
+            data: [],
+            borderColor: "#ef4444",
+            backgroundColor: "rgba(239, 68, 68, 0.08)",
+            borderWidth: 3,
+            tension: 0.35,
+            fill: true,
+            yAxisID: "yRate",
+            pointBackgroundColor: "#ef4444",
+            pointRadius: 4,
+          },
+          {
+            type: "bar",
+            label: "Surveyed Cohort Volume",
+            data: [],
+            backgroundColor: "rgba(56, 189, 248, 0.4)",
+            borderColor: "#38bdf8",
+            borderWidth: 1,
+            borderRadius: 4,
+            yAxisID: "yVolume",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        onClick: (event, elements) => {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const clickedSem = index.toString();
+            state.filters.semester = state.filters.semester === clickedSem ? "All" : clickedSem;
+            state.currentPage = 1;
+            render();
+          }
+        },
+        plugins: {
+          legend: { position: "top", labels: { boxWidth: 12 } },
+          tooltip: {
+            callbacks: {
+              afterBody: () => "Click bar to isolate this academic semester",
+            },
+          },
+        },
+        scales: {
+          x: { grid: { display: false } },
+          yVolume: {
+            type: "linear",
+            position: "left",
+            title: { display: true, text: "Student Count" },
+            grid: { color: "#1e293b" },
+          },
+          yRate: {
+            type: "linear",
+            position: "right",
+            title: { display: true, text: "Depression %" },
+            max: 50,
+            ticks: { callback: (val) => `${val}%` },
+            grid: { drawOnChartArea: false },
+          },
+        },
+      },
+    });
+
+    // 4. Social Isolation Disparity Chart
     const ctxSocial = document.getElementById("chart-social").getContext("2d");
     state.charts.social = new Chart(ctxSocial, {
       type: "bar",
@@ -345,7 +550,53 @@
       },
     });
 
-    // 4. Feature Importance Tornado Chart
+    // 5. Living Style Breakdown Chart
+    const ctxLiving = document.getElementById("chart-living-style").getContext("2d");
+    state.charts.living = new Chart(ctxLiving, {
+      type: "bar",
+      data: {
+        labels: ["Home with Family", "Hostel / Dormitory", "Mess / Shared", "Bachelor Living Alone"],
+        datasets: [
+          {
+            label: "Depression Prevalence (%)",
+            data: [0, 0, 0, 0],
+            backgroundColor: ["#10b981", "#38bdf8", "#f59e0b", "#ef4444"],
+            borderRadius: 4,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        onClick: (event, elements) => {
+          if (elements.length > 0) {
+            const rawLabels = ["Home", "Hostel", "Mess", "Bachelor"];
+            const index = elements[0].index;
+            const clickedLiving = rawLabels[index];
+            state.filters.living = state.filters.living === clickedLiving ? "All" : clickedLiving;
+            state.currentPage = 1;
+            render();
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` Depression Rate: ${ctx.raw.toFixed(1)}% (Click to filter)`,
+            },
+          },
+        },
+        scales: {
+          x: { grid: { display: false } },
+          y: {
+            ticks: { callback: (val) => `${val}%` },
+            grid: { color: "#1e293b" },
+          },
+        },
+      },
+    });
+
+    // 6. Feature Importance Tornado Chart
     const ctxFeatures = document.getElementById("chart-features").getContext("2d");
     const topFeatures = state.features.slice(0, 8);
     state.charts.features = new Chart(ctxFeatures, {
@@ -383,7 +634,7 @@
       },
     });
 
-    // 5. Risk Tier Distribution
+    // 7. Risk Tier Distribution (ZoomCharts Drill Down Donut PRO Style)
     const ctxTiers = document.getElementById("chart-tiers").getContext("2d");
     state.charts.tiers = new Chart(ctxTiers, {
       type: "doughnut",
@@ -400,8 +651,23 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        onClick: (event, elements) => {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const clickedTier = state.charts.tiers.data.labels[index];
+            state.filters.tier = state.filters.tier === clickedTier ? "All" : clickedTier;
+            els.tierFilter.value = state.filters.tier;
+            state.currentPage = 1;
+            render();
+          }
+        },
         plugins: {
           legend: { position: "right" },
+          tooltip: {
+            callbacks: {
+              afterBody: () => "Click slice to filter cohort",
+            },
+          },
         },
         cutout: "70%",
       },
@@ -434,7 +700,24 @@
     state.charts.division.data.datasets[0].data = divRates;
     state.charts.division.update();
 
-    // 3. Social Buffer Disparity
+    // 3. Semester Timeline (Combo Chart)
+    const semesterVolumes = [];
+    const semesterDepRates = [];
+    for (let sem = 0; sem <= 12; sem++) {
+      const semSubset = records.filter((r) => r.semester === sem);
+      semesterVolumes.push(semSubset.length);
+      if (semSubset.length > 0) {
+        const depCount = semSubset.filter((r) => r.depression === 1).length;
+        semesterDepRates.push((depCount / semSubset.length) * 100);
+      } else {
+        semesterDepRates.push(0);
+      }
+    }
+    state.charts.semesterCombo.data.datasets[0].data = semesterDepRates;
+    state.charts.semesterCombo.data.datasets[1].data = semesterVolumes;
+    state.charts.semesterCombo.update();
+
+    // 4. Social Buffer Disparity
     const calcSocialRate = (rel, friends) => {
       const subset = records.filter((r) => r.relationship === rel && r.friends === friends);
       if (subset.length === 0) return 0;
@@ -450,7 +733,18 @@
     state.charts.social.data.datasets[0].data = socialRates;
     state.charts.social.update();
 
-    // 4. Risk Tier Distribution
+    // 5. Living Style Breakdown
+    const livingKeys = ["Home", "Hostel", "Mess", "Bachelor"];
+    const livingRates = livingKeys.map((key) => {
+      const subset = records.filter((r) => r.living === key);
+      if (subset.length === 0) return 0;
+      const dep = subset.filter((r) => r.depression === 1).length;
+      return (dep / subset.length) * 100;
+    });
+    state.charts.living.data.datasets[0].data = livingRates;
+    state.charts.living.update();
+
+    // 6. Risk Tier Distribution
     const tierCounts = [
       records.filter((r) => r.risk_tier === "Critical Risk").length,
       records.filter((r) => r.risk_tier === "High Risk").length,
@@ -459,6 +753,138 @@
     ];
     state.charts.tiers.data.datasets[0].data = tierCounts;
     state.charts.tiers.update();
+  }
+
+  // =========================================================================
+  // WHAT-IF CLINICAL RISK SIMULATOR ENGINE
+  // =========================================================================
+  function attachSimulatorListeners() {
+    // Health Pills
+    els.simHealthPills.querySelectorAll(".sim-pill-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        els.simHealthPills.querySelectorAll(".sim-pill-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.simulator.health = btn.getAttribute("data-val");
+        els.simValHealth.textContent = state.simulator.health;
+        runSimulator();
+      });
+    });
+
+    // Relationship Pills
+    els.simRelPills.querySelectorAll(".sim-pill-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        els.simRelPills.querySelectorAll(".sim-pill-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.simulator.relationship = btn.getAttribute("data-val");
+        els.simValRel.textContent = state.simulator.relationship;
+        runSimulator();
+      });
+    });
+
+    // Friend Circle Pills
+    els.simFriendsPills.querySelectorAll(".sim-pill-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        els.simFriendsPills.querySelectorAll(".sim-pill-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.simulator.friends = btn.getAttribute("data-val");
+        els.simValFriends.textContent = state.simulator.friends === "Yes" ? "Yes (Supported)" : "No (Isolated)";
+        runSimulator();
+      });
+    });
+
+    // CGPA Slider
+    els.simSliderCgpa.addEventListener("input", (e) => {
+      state.simulator.cgpa = parseFloat(e.target.value);
+      els.simValCgpa.textContent = state.simulator.cgpa.toFixed(2);
+      runSimulator();
+    });
+
+    // Cost Slider
+    els.simSliderCost.addEventListener("input", (e) => {
+      state.simulator.cost = parseInt(e.target.value, 10);
+      els.simValCost.textContent = `${state.simulator.cost.toLocaleString()} BDT`;
+      runSimulator();
+    });
+  }
+
+  // Real-time Risk Simulator Calculation based on ML Model Logic
+  function runSimulator() {
+    const s = state.simulator;
+
+    // Base probability from health condition (accounts for 79.4% importance)
+    let p = 0.05;
+    if (s.health === "Critical") {
+      p = 0.85;
+    } else if (s.health === "Abnormal") {
+      p = 0.40;
+    } else if (s.health === "Normal") {
+      p = 0.10;
+    } else if (s.health === "Good") {
+      p = 0.04;
+    }
+
+    // Relationship & Social Support interaction
+    if (s.relationship === "Single") {
+      p += (s.friends === "No") ? 0.12 : 0.03;
+    } else if (s.relationship === "In a Relationship") {
+      p -= (s.friends === "Yes") ? 0.04 : 0.01;
+    } else if (s.relationship === "Complicated") {
+      p += 0.05;
+    }
+
+    // CGPA modifier (lower CGPA increases risk)
+    if (s.cgpa < 3.00) {
+      p += 0.04;
+    } else if (s.cgpa >= 3.75) {
+      p -= 0.02;
+    }
+
+    // Living cost modifier (high financial strain increases risk)
+    if (s.cost > 18000) {
+      p += 0.04;
+    } else if (s.cost < 6000) {
+      p -= 0.01;
+    }
+
+    // Clamp probability between 0.01 and 0.99
+    p = Math.max(0.015, Math.min(0.985, p));
+
+    // Update UI Gauge
+    const pct = (p * 100).toFixed(1);
+    els.simRiskPct.textContent = `${pct}%`;
+
+    // SVG Circle progress calculation (Circumference = 2 * PI * 66 = ~414.69)
+    const maxOffset = 414.69;
+    const progressOffset = maxOffset - (maxOffset * p);
+    els.simGaugeCircle.style.strokeDashoffset = progressOffset;
+
+    // Tiers and Protocol
+    let tierText = "Low Risk";
+    let tierBadgeClass = "badge-low";
+    let strokeColor = "#10b981";
+    let protocolText = "Routine Wellness Monitoring. Student shows solid protective health and social baselines.";
+
+    if (p >= 0.85) {
+      tierText = "Critical Risk";
+      tierBadgeClass = "badge-critical";
+      strokeColor = "#ef4444";
+      protocolText = "Immediate Clinical Referral. Medical and mental health dispatch priority within 24 hours.";
+    } else if (p >= 0.60) {
+      tierText = "High Risk";
+      tierBadgeClass = "badge-high";
+      strokeColor = "#f97316";
+      protocolText = "Counseling Center Outreach. Schedule proactive one-on-one session with student affairs counselor.";
+    } else if (p >= 0.30) {
+      tierText = "Moderate Risk";
+      tierBadgeClass = "badge-moderate";
+      strokeColor = "#f59e0b";
+      protocolText = "Academic Advisor Check-in. Recommend peer support groups and monitor upcoming exam performance.";
+    }
+
+    els.simGaugeCircle.style.stroke = strokeColor;
+    els.simRiskBadge.className = `badge ${tierBadgeClass}`;
+    els.simRiskBadge.textContent = tierText;
+    els.simProtocolText.innerHTML = `<strong>Recommended Protocol:</strong> ${protocolText}`;
   }
 
   // Render Student Roster Table

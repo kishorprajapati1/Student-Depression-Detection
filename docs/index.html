@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Mental Health Analytics & Predictive Risk System | Kishor Prajapati</title>
+  <title>Student Mental Health Analytics &amp; Predictive Risk System | Kishor Prajapati</title>
   <meta name="description" content="Interactive diagnostic dashboard and machine learning risk early-warning system analyzing university student psychological well-being. Built by Kishor Prajapati.">
   <link rel="stylesheet" href="styles.css">
   <!-- Chart.js CDN -->
@@ -17,10 +17,13 @@
       <span class="brand-badge">Project 01</span>
       <div>
         <h1 class="brand-title">Student Mental Health Analytics &amp; Predictive Risk System</h1>
-        <p class="brand-author">Portfolio Case Study | Kishor Prajapati (kishorprajapati.com)</p>
+        <p class="brand-author">Interactive Business Intelligence Case Study | Kishor Prajapati (kishorprajapati.com)</p>
       </div>
     </div>
     <div class="nav-links">
+      <button id="btn-fullscreen" class="nav-btn" type="button" title="Toggle Fullscreen Presentation Mode">
+        Fullscreen View
+      </button>
       <a href="https://kishorprajapati.com" target="_blank" rel="noopener noreferrer" class="nav-btn">
         Portfolio Website
       </a>
@@ -97,11 +100,18 @@
     <!-- Main Analytics Body -->
     <main class="main-content">
 
+      <!-- Active Interactive Breadcrumb Strip (ZoomCharts Style) -->
+      <div id="breadcrumb-strip" class="breadcrumb-strip">
+        <span class="breadcrumb-label">Active Focus:</span>
+        <span class="breadcrumb-chip">National Benchmark (All 4,464 Students)</span>
+      </div>
+
       <!-- View Navigation Tabs -->
       <nav class="view-tabs" aria-label="Dashboard Views">
         <button class="tab-btn active" data-tab="overview" type="button">Executive Overview</button>
         <button class="tab-btn" data-tab="social" type="button">Social &amp; Economic Correlates</button>
-        <button class="tab-btn" data-tab="ml" type="button">Predictive Model &amp; Drivers</button>
+        <button class="tab-btn" data-tab="simulator" type="button">What-If Clinical Risk Simulator</button>
+        <button class="tab-btn" data-tab="ml" type="button">Predictive Model Governance</button>
         <button class="tab-btn" data-tab="roster" type="button">Student Triage Roster</button>
       </nav>
 
@@ -143,6 +153,7 @@
                 <h2 class="card-title">Physical Health as Deterministic Predictor</h2>
                 <p class="card-subtitle">Depression rate across self-reported physical health states</p>
               </div>
+              <span class="card-hint">Click bar to filter</span>
             </div>
             <div class="chart-wrapper">
               <canvas id="chart-health"></canvas>
@@ -155,10 +166,25 @@
                 <h2 class="card-title">Geographic Prevalence by Division</h2>
                 <p class="card-subtitle">Regional distribution across university origin divisions</p>
               </div>
+              <span class="card-hint">Click bar to filter</span>
             </div>
             <div class="chart-wrapper">
               <canvas id="chart-division"></canvas>
             </div>
+          </div>
+        </div>
+
+        <!-- ZoomCharts Drill Down Combo PRO Style: Semester Timeline Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Academic Progression Timeline (Semester 0 to 12)</h2>
+              <p class="card-subtitle">Dual-axis analysis: Cohort Volume (Bars) vs. Depression Rate % (Spline Line)</p>
+            </div>
+            <span class="card-hint">Click semester to drill down</span>
+          </div>
+          <div class="chart-wrapper" style="min-height: 310px;">
+            <canvas id="chart-semester-combo"></canvas>
           </div>
         </div>
       </section>
@@ -172,6 +198,7 @@
                 <h2 class="card-title">The Social Buffer Disparity (4.8x Multiplier)</h2>
                 <p class="card-subtitle">Comparative prevalence across relationship status and friend circles</p>
               </div>
+              <span class="card-hint">Click bar to filter</span>
             </div>
             <div class="chart-wrapper">
               <canvas id="chart-social"></canvas>
@@ -184,15 +211,121 @@
                 <h2 class="card-title">Risk Tier Proportion in Current Cohort</h2>
                 <p class="card-subtitle">Distribution of students across early-warning clinical risk tiers</p>
               </div>
+              <span class="card-hint">Click slice to filter</span>
             </div>
             <div class="chart-wrapper">
               <canvas id="chart-tiers"></canvas>
             </div>
           </div>
         </div>
+
+        <!-- Living Style & Family Class Breakdown -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Depression Prevalence by Living Style &amp; Family Class</h2>
+              <p class="card-subtitle">Cross-sectional analysis: Home vs. Hostel vs. Mess living arrangements</p>
+            </div>
+            <span class="card-hint">Click bar to filter</span>
+          </div>
+          <div class="chart-wrapper" style="min-height: 290px;">
+            <canvas id="chart-living-style"></canvas>
+          </div>
+        </div>
       </section>
 
-      <!-- TAB 3: MACHINE LEARNING & PREDICTIVE GOVERNANCE -->
+      <!-- TAB 3: WHAT-IF CLINICAL RISK SIMULATOR (NEW FEATURE) -->
+      <section id="tab-simulator" class="tab-panel">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Interactive What-If Student Risk Simulator</h2>
+              <p class="card-subtitle">Simulate individual student risk profiles using the trained Random Forest engine</p>
+            </div>
+            <span class="card-hint">Dynamic Simulation</span>
+          </div>
+
+          <div class="simulator-layout">
+            <!-- Simulator Controls -->
+            <div class="sim-controls">
+              <div class="sim-row">
+                <span class="sim-label">
+                  <span>Physical Health Condition</span>
+                  <span id="sim-val-health" style="color: var(--brand-blue);">Normal</span>
+                </span>
+                <div class="sim-pill-group" id="sim-pills-health">
+                  <button type="button" class="sim-pill-btn" data-val="Critical">Critical</button>
+                  <button type="button" class="sim-pill-btn" data-val="Abnormal">Abnormal</button>
+                  <button type="button" class="sim-pill-btn active" data-val="Normal">Normal</button>
+                  <button type="button" class="sim-pill-btn" data-val="Good">Good</button>
+                </div>
+              </div>
+
+              <div class="sim-row">
+                <span class="sim-label">
+                  <span>Relationship Status</span>
+                  <span id="sim-val-rel" style="color: var(--brand-blue);">Single</span>
+                </span>
+                <div class="sim-pill-group" id="sim-pills-rel">
+                  <button type="button" class="sim-pill-btn active" data-val="Single">Single</button>
+                  <button type="button" class="sim-pill-btn" data-val="In a Relationship">In a Relationship</button>
+                  <button type="button" class="sim-pill-btn" data-val="Complicated">Complicated</button>
+                </div>
+              </div>
+
+              <div class="sim-row">
+                <span class="sim-label">
+                  <span>Active Friend Circle</span>
+                  <span id="sim-val-friends" style="color: var(--brand-blue);">Yes</span>
+                </span>
+                <div class="sim-pill-group" id="sim-pills-friends">
+                  <button type="button" class="sim-pill-btn active" data-val="Yes">Yes (Supported)</button>
+                  <button type="button" class="sim-pill-btn" data-val="No">No (Isolated)</button>
+                </div>
+              </div>
+
+              <div class="sim-row">
+                <span class="sim-label">
+                  <span>Cumulative Grade Point Average (CGPA)</span>
+                  <span id="sim-val-cgpa" style="color: var(--brand-blue);">3.40</span>
+                </span>
+                <input type="range" id="sim-slider-cgpa" class="sim-slider" min="2.00" max="4.00" step="0.05" value="3.40">
+              </div>
+
+              <div class="sim-row">
+                <span class="sim-label">
+                  <span>Monthly Non-Study Living Cost (BDT)</span>
+                  <span id="sim-val-cost" style="color: var(--brand-blue);">10,000 BDT</span>
+                </span>
+                <input type="range" id="sim-slider-cost" class="sim-slider" min="3000" max="30000" step="500" value="10000">
+              </div>
+            </div>
+
+            <!-- Simulation Output Gauge -->
+            <div class="sim-gauge-card">
+              <span class="kpi-label">Predicted Depression Risk Score</span>
+              
+              <div class="gauge-meter-wrapper">
+                <svg class="gauge-circle-svg" width="160" height="160" viewBox="0 0 160 160">
+                  <circle class="gauge-circle-bg" cx="80" cy="80" r="66" />
+                  <circle id="sim-gauge-circle" class="gauge-circle-progress" cx="80" cy="80" r="66" 
+                          stroke-dasharray="414.69" stroke-dashoffset="350" />
+                </svg>
+                <div class="gauge-inner-text">
+                  <span id="sim-risk-pct" class="gauge-percentage">13.2%</span>
+                  <span id="sim-risk-badge" class="badge badge-low">Low Risk</span>
+                </div>
+              </div>
+
+              <div id="sim-protocol-text" class="sim-protocol-text">
+                <strong>Recommended Dispatch:</strong> Routine Wellness Monitoring. Student exhibits strong protective social and physical baseline factors.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: MACHINE LEARNING & PREDICTIVE GOVERNANCE -->
       <section id="tab-ml" class="tab-panel">
         <div class="grid-2col">
           <div class="card">
@@ -242,7 +375,7 @@
         </div>
       </section>
 
-      <!-- TAB 4: STUDENT TRIAGE ROSTER -->
+      <!-- TAB 5: STUDENT TRIAGE ROSTER -->
       <section id="tab-roster" class="tab-panel">
         <div class="card">
           <div class="card-header">
@@ -297,7 +430,7 @@
       <a href="https://kishorprajapati.com" target="_blank" rel="noopener noreferrer">Kishor Prajapati</a>
     </div>
     <div>
-      <span>Stack: Python ETL, SQLite Star Schema, Scikit-Learn, Power BI DAX, Modern Web Dashboard</span>
+      <span>Stack: Python ETL, SQLite Star Schema, Scikit-Learn, Power BI DAX, ZoomCharts-Inspired UI</span>
     </div>
   </footer>
 
