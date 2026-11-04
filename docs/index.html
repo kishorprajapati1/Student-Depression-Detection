@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Mental Health Analytics & Predictive Risk System | Kishor Prajapati</title>
+  <meta name="description" content="Interactive diagnostic dashboard and machine learning risk early-warning system analyzing university student psychological well-being. Built by Kishor Prajapati.">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Navigation & Brand Header -->
+  <header class="top-nav">
+    <div class="brand-section">
+      <span class="brand-badge">Project 01</span>
+      <div>
+        <h1 class="brand-title">Student Mental Health Analytics &amp; Predictive Risk System</h1>
+        <p class="brand-author">Portfolio Case Study | Kishor Prajapati (kishorprajapati.com)</p>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="https://kishorprajapati.com" target="_blank" rel="noopener noreferrer" class="nav-btn">
+        Portfolio Website
+      </a>
+      <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="nav-btn primary">
+        GitHub Repository
+      </a>
+    </div>
+  </header>
+
+  <!-- Application Shell -->
+  <div class="app-container">
+
+    <!-- Sidebar Slicers & Cohort Filters -->
+    <aside class="sidebar">
+      <div class="sidebar-title">
+        <span>Cohort Slicers</span>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-division" class="filter-label">Administrative Division</label>
+        <select id="filter-division" class="filter-select">
+          <option value="All">All Divisions (National)</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-gender" class="filter-label">Gender</label>
+        <select id="filter-gender" class="filter-select">
+          <option value="All">All Genders</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-health" class="filter-label">Physical Health Condition</label>
+        <select id="filter-health" class="filter-select">
+          <option value="All">All Health Conditions</option>
+          <option value="Critical">Critical</option>
+          <option value="Abnormal">Abnormal</option>
+          <option value="Normal">Normal</option>
+          <option value="Good">Good</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-tier" class="filter-label">ML Predicted Risk Tier</label>
+        <select id="filter-tier" class="filter-select">
+          <option value="All">All Risk Tiers</option>
+          <option value="Critical Risk">Critical Risk (&ge; 85%)</option>
+          <option value="High Risk">High Risk (60% - 84%)</option>
+          <option value="Moderate Risk">Moderate Risk (30% - 59%)</option>
+          <option value="Low Risk">Low Risk (&lt; 30%)</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-stage" class="filter-label">Academic Stage</label>
+        <select id="filter-stage" class="filter-select">
+          <option value="All">All Semesters</option>
+          <option value="Early">Early Stage (Sem 0 - 3)</option>
+          <option value="Mid">Mid Stage (Sem 4 - 7)</option>
+          <option value="Senior">Senior / Thesis (Sem 8 - 12)</option>
+        </select>
+      </div>
+
+      <button id="btn-reset-filters" class="btn-reset-filters" type="button">Reset All Filters</button>
+
+      <div id="filter-summary-text" class="filter-badge-summary">
+        Loading cohort records...
+      </div>
+    </aside>
+
+    <!-- Main Analytics Body -->
+    <main class="main-content">
+
+      <!-- View Navigation Tabs -->
+      <nav class="view-tabs" aria-label="Dashboard Views">
+        <button class="tab-btn active" data-tab="overview" type="button">Executive Overview</button>
+        <button class="tab-btn" data-tab="social" type="button">Social &amp; Economic Correlates</button>
+        <button class="tab-btn" data-tab="ml" type="button">Predictive Model &amp; Drivers</button>
+        <button class="tab-btn" data-tab="roster" type="button">Student Triage Roster</button>
+      </nav>
+
+      <!-- Reactive KPI Banner (Recalculates with Slicers) -->
+      <section class="kpi-grid">
+        <div class="kpi-card accent-blue">
+          <span class="kpi-label">Active Cohort Sample</span>
+          <span id="kpi-total-val" class="kpi-value">4,464</span>
+          <span class="kpi-subtext">University survey respondents</span>
+        </div>
+        <div class="kpi-card accent-red">
+          <span class="kpi-label">Depression Prevalence</span>
+          <span id="kpi-prev-val" class="kpi-value">26.9%</span>
+          <span class="kpi-subtext">Clinically elevated symptom rate</span>
+        </div>
+        <div class="kpi-card accent-amber">
+          <span class="kpi-label">Critical Risk Cohort</span>
+          <span id="kpi-crit-val" class="kpi-value">405</span>
+          <span class="kpi-subtext">Predicted probability &ge; 85%</span>
+        </div>
+        <div class="kpi-card accent-green">
+          <span class="kpi-label">Average CGPA</span>
+          <span id="kpi-cgpa-val" class="kpi-value">3.41 / 4.00</span>
+          <span class="kpi-subtext">Academic achievement baseline</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Average Monthly Living Cost</span>
+          <span id="kpi-cost-val" class="kpi-value">11,243 BDT</span>
+          <span class="kpi-subtext">Non-tuition student expense</span>
+        </div>
+      </section>
+
+      <!-- TAB 1: EXECUTIVE OVERVIEW -->
+      <section id="tab-overview" class="tab-panel active">
+        <div class="grid-2col">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Physical Health as Deterministic Predictor</h2>
+                <p class="card-subtitle">Depression rate across self-reported physical health states</p>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chart-health"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Geographic Prevalence by Division</h2>
+                <p class="card-subtitle">Regional distribution across university origin divisions</p>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chart-division"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: SOCIAL & ECONOMIC CORRELATES -->
+      <section id="tab-social" class="tab-panel">
+        <div class="grid-2col">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">The Social Buffer Disparity (4.8x Multiplier)</h2>
+                <p class="card-subtitle">Comparative prevalence across relationship status and friend circles</p>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chart-social"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Risk Tier Proportion in Current Cohort</h2>
+                <p class="card-subtitle">Distribution of students across early-warning clinical risk tiers</p>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chart-tiers"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: MACHINE LEARNING & PREDICTIVE GOVERNANCE -->
+      <section id="tab-ml" class="tab-panel">
+        <div class="grid-2col">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Primary Risk Drivers (Feature Importance)</h2>
+                <p class="card-subtitle">Gini importance weights extracted from Champion Random Forest</p>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chart-features"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Model Performance &amp; Confusion Matrix</h2>
+                <p class="card-subtitle">5-Fold Stratified Cross-Validation benchmark (Zero False Alarms)</p>
+              </div>
+            </div>
+            <div>
+              <div class="matrix-container">
+                <div class="matrix-box tn">
+                  <span class="matrix-label">True Negative (Healthy Correct)</span>
+                  <span class="matrix-value">3,263</span>
+                </div>
+                <div class="matrix-box tp">
+                  <span class="matrix-label">True Positive (Depressed Flagged)</span>
+                  <span class="matrix-value">1,096</span>
+                </div>
+                <div class="matrix-box fp">
+                  <span class="matrix-label">False Positive (False Alarm)</span>
+                  <span class="matrix-value">0</span>
+                </div>
+                <div class="matrix-box fn">
+                  <span class="matrix-label">False Negative (Missed Risk)</span>
+                  <span class="matrix-value">105</span>
+                </div>
+              </div>
+              <div style="margin-top: 1rem; font-size: 0.8125rem; color: #94a3b8; line-height: 1.6;">
+                <p><strong>Accuracy:</strong> 97.6% &nbsp;|&nbsp; <strong>Precision:</strong> 100.0% &nbsp;|&nbsp; <strong>Recall:</strong> 91.3% &nbsp;|&nbsp; <strong>ROC-AUC:</strong> 0.994</p>
+                <p style="margin-top: 0.25rem;">The model ensures zero false positives, protecting campus resources from dispatching urgent counseling interventions to non-depressed students.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: STUDENT TRIAGE ROSTER -->
+      <section id="tab-roster" class="tab-panel">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Early Intervention Case Management Roster</h2>
+              <p class="card-subtitle">Real-time student list with individual risk scores and counselor dispatch priorities</p>
+            </div>
+            <div class="table-actions">
+              <input type="text" id="table-search" class="table-search-input" placeholder="Search by Student ID or Division...">
+              <button id="btn-export-csv" class="nav-btn primary" type="button">Export Filtered CSV</button>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Student ID</th>
+                  <th>Demographics</th>
+                  <th>Division</th>
+                  <th>Semester</th>
+                  <th>CGPA</th>
+                  <th>Health Status</th>
+                  <th>Risk Probability</th>
+                  <th>Risk Tier</th>
+                  <th>Intervention Protocol</th>
+                </tr>
+              </thead>
+              <tbody id="roster-table-body">
+                <!-- Dynamically Populated by app.js -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-bar">
+            <span id="page-info">Loading roster...</span>
+            <div class="pagination-controls">
+              <button id="btn-prev-page" class="page-btn" type="button" disabled>Previous</button>
+              <button id="btn-next-page" class="page-btn" type="button">Next</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Executive Footer -->
+  <footer class="footer">
+    <div>
+      <span>Developed as part of the Business Intelligence Portfolio by </span>
+      <a href="https://kishorprajapati.com" target="_blank" rel="noopener noreferrer">Kishor Prajapati</a>
+    </div>
+    <div>
+      <span>Stack: Python ETL, SQLite Star Schema, Scikit-Learn, Power BI DAX, Modern Web Dashboard</span>
+    </div>
+  </footer>
+
+  <!-- Data Payload & App Engine -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
