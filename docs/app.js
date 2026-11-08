@@ -48,6 +48,7 @@
     btnReset: document.getElementById("btn-reset-filters"),
     breadcrumbStrip: document.getElementById("breadcrumb-strip"),
     btnFullscreen: document.getElementById("btn-fullscreen"),
+    btnThemeToggle: document.getElementById("btn-theme-toggle"),
 
     presetAll: document.getElementById("preset-all"),
     presetCriticalHealth: document.getElementById("preset-critical-health"),
@@ -144,6 +145,15 @@
     });
 
     els.btnReset.addEventListener("click", resetAllFilters);
+
+    // Theme Switcher (Apple Light Theme Default)
+    if (els.btnThemeToggle) {
+      els.btnThemeToggle.addEventListener("click", () => {
+        const isDark = document.body.classList.toggle("dark-theme");
+        els.btnThemeToggle.textContent = isDark ? "Theme: Dark" : "Theme: Light";
+        updateChartThemeColors(isDark);
+      });
+    }
 
     // Fullscreen View
     els.btnFullscreen.addEventListener("click", () => {
@@ -374,9 +384,34 @@
     els.kpiCost.textContent = Math.round(avgCost).toLocaleString();
   }
 
-  // Initialize Charts (Apple Palette: No rainbow, no purple)
+  function updateChartThemeColors(isDark) {
+    const gridColor = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)";
+    const textColor = isDark ? "#a1a1a6" : "#6e6e73";
+    const volumeBarBg = isDark ? "#2c2c2e" : "#e5e5ea";
+    const volumeBarBorder = isDark ? "#3f3f46" : "#d1d1d6";
+
+    Chart.defaults.color = textColor;
+
+    Object.values(state.charts).forEach((chart) => {
+      if (!chart) return;
+      if (chart.options.scales) {
+        Object.values(chart.options.scales).forEach((scale) => {
+          if (scale.grid) scale.grid.color = gridColor;
+        });
+      }
+      chart.update();
+    });
+
+    if (state.charts.semesterCombo) {
+      state.charts.semesterCombo.data.datasets[1].backgroundColor = volumeBarBg;
+      state.charts.semesterCombo.data.datasets[1].borderColor = volumeBarBorder;
+      state.charts.semesterCombo.update();
+    }
+  }
+
+  // Initialize Charts (Apple Palette: Clean Light Theme Default)
   function initCharts() {
-    Chart.defaults.color = "#a1a1a6";
+    Chart.defaults.color = "#6e6e73";
     Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif";
 
     // 1. Health Condition Chart
@@ -420,7 +455,7 @@
           x: {
             max: 100,
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "#26262a" },
+            grid: { color: "rgba(0, 0, 0, 0.05)" },
           },
           y: { grid: { display: false } },
         },
@@ -467,7 +502,7 @@
           x: { grid: { display: false } },
           y: {
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "#26262a" },
+            grid: { color: "rgba(0, 0, 0, 0.05)" },
           },
         },
       },
@@ -497,8 +532,8 @@
             type: "bar",
             label: "Surveyed Cohort Volume",
             data: [],
-            backgroundColor: "#2c2c2e",
-            borderColor: "#3f3f46",
+            backgroundColor: "#e5e5ea",
+            borderColor: "#d1d1d6",
             borderWidth: 1,
             borderRadius: 4,
             yAxisID: "yVolume",
@@ -531,7 +566,7 @@
             type: "linear",
             position: "left",
             title: { display: true, text: "Students" },
-            grid: { color: "#26262a" },
+            grid: { color: "rgba(0, 0, 0, 0.05)" },
           },
           yRate: {
             type: "linear",
@@ -576,7 +611,7 @@
           y: {
             max: 60,
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "#26262a" },
+            grid: { color: "rgba(0, 0, 0, 0.05)" },
           },
         },
       },
@@ -622,7 +657,7 @@
           x: { grid: { display: false } },
           y: {
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "#26262a" },
+            grid: { color: "rgba(0, 0, 0, 0.05)" },
           },
         },
       },
@@ -659,7 +694,7 @@
         scales: {
           x: {
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "#26262a" },
+            grid: { color: "rgba(0, 0, 0, 0.05)" },
           },
           y: { grid: { display: false } },
         },
@@ -885,23 +920,23 @@
 
     let tierText = "Low Risk";
     let tierClass = "tier-low";
-    let strokeColor = "#30d158";
+    let strokeColor = "#34c759";
     let protocolText = "Routine Wellness Monitoring. Student shows solid protective health and social baselines.";
 
     if (p >= 0.85) {
       tierText = "Critical Risk";
       tierClass = "tier-critical";
-      strokeColor = "#ff453a";
+      strokeColor = "#d70015";
       protocolText = "Immediate Clinical Referral. Medical and mental health dispatch priority within 24 hours.";
     } else if (p >= 0.60) {
       tierText = "High Risk";
       tierClass = "tier-high";
-      strokeColor = "#ff9f0a";
+      strokeColor = "#ff9500";
       protocolText = "Counseling Center Outreach. Proactive session scheduled with student affairs counselor.";
     } else if (p >= 0.30) {
       tierText = "Moderate Risk";
       tierClass = "tier-moderate";
-      strokeColor = "#ffd60a";
+      strokeColor = "#b28900";
       protocolText = "Academic Advisor Check-in. Recommend peer support groups and monitor upcoming exam performance.";
     }
 
