@@ -1,8 +1,7 @@
 /**
- * Project 01: Student Mental Health & Predictive Risk System
- * Controller & ZoomCharts-Inspired Executive UI Engine
+ * Project 01: Student Mental Health Intelligence & Predictive Risk System
+ * Controller & Analytical Interaction Engine
  * Author: Kishor Prajapati (kishorprajapati.com)
- * No Emojis | High Performance | Dynamic What-If Simulator
  */
 
 (function () {
@@ -61,8 +60,8 @@
     kpiCgpa: document.getElementById("kpi-cgpa-val"),
     kpiCost: document.getElementById("kpi-cost-val"),
 
-    tabTriggers: document.querySelectorAll(".tab-trigger"),
-    tabPanes: document.querySelectorAll(".tab-pane"),
+    tabTriggers: document.querySelectorAll(".view-tab"),
+    tabPanes: document.querySelectorAll(".tab-content-panel"),
 
     tableBody: document.getElementById("roster-table-body"),
     tableSearch: document.getElementById("table-search"),
@@ -150,10 +149,10 @@
     els.btnFullscreen.addEventListener("click", () => {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
-        els.btnFullscreen.textContent = "Exit Fullscreen";
+        els.btnFullscreen.textContent = "Exit Full Screen";
       } else {
         document.exitFullscreen().catch(() => {});
-        els.btnFullscreen.textContent = "Fullscreen View";
+        els.btnFullscreen.textContent = "Full Screen";
       }
     });
   }
@@ -161,7 +160,7 @@
   // Preset Filters
   function attachPresetListeners() {
     const clearPresetActives = () => {
-      document.querySelectorAll(".preset-pill").forEach((p) => p.classList.remove("active"));
+      document.querySelectorAll(".pill-button").forEach((p) => p.classList.remove("active"));
     };
 
     els.presetAll.addEventListener("click", () => {
@@ -230,7 +229,6 @@
         btn.classList.add("active");
         document.getElementById(`tab-${targetTab}`).classList.add("active");
 
-        // Resize charts to fit new container dimensions
         Object.values(state.charts).forEach((c) => c && c.resize());
       });
     });
@@ -302,7 +300,7 @@
     renderTable();
   }
 
-  // Breadcrumb Trail (ZoomCharts Style)
+  // Breadcrumb Trail
   function renderBreadcrumbs() {
     const active = [];
     if (state.filters.division !== "All") active.push({ key: "division", label: `Division: ${state.filters.division}` });
@@ -315,32 +313,30 @@
     if (state.filters.friends !== "All") active.push({ key: "friends", label: `Friends: ${state.filters.friends}` });
     if (state.filters.relationship !== "All") active.push({ key: "relationship", label: `Status: ${state.filters.relationship}` });
 
-    els.breadcrumbStrip.innerHTML = '<span class="breadcrumb-title">Active Focus:</span>';
+    els.breadcrumbStrip.innerHTML = '<span class="trail-caption">Active Scope:</span>';
 
     if (active.length === 0) {
       const chip = document.createElement("span");
-      chip.className = "breadcrumb-item";
-      chip.textContent = "National Benchmark (All 4,464 Students)";
+      chip.className = "trail-chip";
+      chip.textContent = "National Sample (All 4,464 Students)";
       els.breadcrumbStrip.appendChild(chip);
     } else {
       active.forEach((f) => {
         const chip = document.createElement("span");
-        chip.className = "breadcrumb-item";
-        chip.innerHTML = `${f.label} <button class="breadcrumb-remove" data-key="${f.key}">&times;</button>`;
+        chip.className = "trail-chip";
+        chip.innerHTML = `${f.label} <button class="trail-chip-close" data-key="${f.key}">&times;</button>`;
         els.breadcrumbStrip.appendChild(chip);
       });
 
-      // Clear all pill
       const clearBtn = document.createElement("button");
-      clearBtn.className = "preset-pill";
+      clearBtn.className = "pill-button";
       clearBtn.style.padding = "0.2rem 0.5rem";
       clearBtn.style.fontSize = "0.75rem";
       clearBtn.textContent = "Clear All";
       clearBtn.addEventListener("click", resetAllFilters);
       els.breadcrumbStrip.appendChild(clearBtn);
 
-      // Event listener for remove chip
-      els.breadcrumbStrip.querySelectorAll(".breadcrumb-remove").forEach((btn) => {
+      els.breadcrumbStrip.querySelectorAll(".trail-chip-close").forEach((btn) => {
         btn.addEventListener("click", (e) => {
           const key = e.target.getAttribute("data-key");
           state.filters[key] = "All";
@@ -360,7 +356,7 @@
       els.kpiPrevalence.textContent = "0.0%";
       els.kpiCritical.textContent = "0";
       els.kpiCgpa.textContent = "0.00";
-      els.kpiCost.textContent = "0 BDT";
+      els.kpiCost.textContent = "0";
       return;
     }
 
@@ -374,14 +370,14 @@
     els.kpiTotal.textContent = count.toLocaleString();
     els.kpiPrevalence.textContent = `${prevRate.toFixed(1)}%`;
     els.kpiCritical.textContent = critCount.toLocaleString();
-    els.kpiCgpa.textContent = `${avgCgpa.toFixed(2)} / 4.00`;
-    els.kpiCost.textContent = `${Math.round(avgCost).toLocaleString()} BDT`;
+    els.kpiCgpa.textContent = avgCgpa.toFixed(2);
+    els.kpiCost.textContent = Math.round(avgCost).toLocaleString();
   }
 
-  // Initialize Charts with ZoomCharts In-Chart Click Behaviors
+  // Initialize Charts (Apple Palette: No rainbow, no purple)
   function initCharts() {
-    Chart.defaults.color = "#94a3b8";
-    Chart.defaults.font.family = "'Plus Jakarta Sans', -apple-system, sans-serif";
+    Chart.defaults.color = "#a1a1a6";
+    Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif";
 
     // 1. Health Condition Chart
     const ctxHealth = document.getElementById("chart-health").getContext("2d");
@@ -393,8 +389,8 @@
           {
             label: "Depression Rate (%)",
             data: [0, 0, 0, 0],
-            backgroundColor: ["#ff3b57", "#ff9100", "#38bdf8", "#00e676"],
-            borderRadius: 6,
+            backgroundColor: ["#ff453a", "#ff9f0a", "#0a84ff", "#30d158"],
+            borderRadius: 4,
           },
         ],
       },
@@ -424,7 +420,7 @@
           x: {
             max: 100,
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            grid: { color: "#26262a" },
           },
           y: { grid: { display: false } },
         },
@@ -441,8 +437,8 @@
           {
             label: "Prevalence (%)",
             data: [],
-            backgroundColor: "#38bdf8",
-            borderRadius: 6,
+            backgroundColor: "#0a84ff",
+            borderRadius: 4,
           },
         ],
       },
@@ -471,13 +467,13 @@
           x: { grid: { display: false } },
           y: {
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            grid: { color: "#26262a" },
           },
         },
       },
     });
 
-    // 3. ZoomCharts Combo PRO: Academic Semester Timeline
+    // 3. Academic Semester Timeline (Combo)
     const ctxSemester = document.getElementById("chart-semester-combo").getContext("2d");
     state.charts.semesterCombo = new Chart(ctxSemester, {
       type: "bar",
@@ -488,23 +484,23 @@
             type: "line",
             label: "Depression Prevalence (%)",
             data: [],
-            borderColor: "#ff3b57",
-            backgroundColor: "rgba(255, 59, 87, 0.12)",
-            borderWidth: 3,
-            tension: 0.35,
+            borderColor: "#ff453a",
+            backgroundColor: "rgba(255, 69, 58, 0.08)",
+            borderWidth: 2,
+            tension: 0.3,
             fill: true,
             yAxisID: "yRate",
-            pointBackgroundColor: "#ff3b57",
-            pointRadius: 4,
+            pointBackgroundColor: "#ff453a",
+            pointRadius: 3,
           },
           {
             type: "bar",
             label: "Surveyed Cohort Volume",
             data: [],
-            backgroundColor: "rgba(56, 189, 248, 0.4)",
-            borderColor: "#38bdf8",
+            backgroundColor: "#2c2c2e",
+            borderColor: "#3f3f46",
             borderWidth: 1,
-            borderRadius: 6,
+            borderRadius: 4,
             yAxisID: "yVolume",
           },
         ],
@@ -522,10 +518,10 @@
           }
         },
         plugins: {
-          legend: { position: "top", labels: { boxWidth: 12, font: { weight: "600" } } },
+          legend: { position: "top", labels: { boxWidth: 12 } },
           tooltip: {
             callbacks: {
-              afterBody: () => "Click bar to isolate this academic semester",
+              afterBody: () => "Click bar to isolate this semester",
             },
           },
         },
@@ -534,13 +530,13 @@
           yVolume: {
             type: "linear",
             position: "left",
-            title: { display: true, text: "Students Surveyed" },
-            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            title: { display: true, text: "Students" },
+            grid: { color: "#26262a" },
           },
           yRate: {
             type: "linear",
             position: "right",
-            title: { display: true, text: "Depression Rate %" },
+            title: { display: true, text: "Depression %" },
             max: 50,
             ticks: { callback: (val) => `${val}%` },
             grid: { drawOnChartArea: false },
@@ -559,8 +555,8 @@
           {
             label: "Depression Rate (%)",
             data: [0, 0, 0, 0],
-            backgroundColor: ["#ff3b57", "#ff9100", "#ffc400", "#00e676"],
-            borderRadius: 6,
+            backgroundColor: ["#ff453a", "#ff9f0a", "#ffd60a", "#30d158"],
+            borderRadius: 4,
           },
         ],
       },
@@ -580,7 +576,7 @@
           y: {
             max: 60,
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            grid: { color: "#26262a" },
           },
         },
       },
@@ -596,8 +592,8 @@
           {
             label: "Depression Prevalence (%)",
             data: [0, 0, 0, 0],
-            backgroundColor: ["#00e676", "#38bdf8", "#ffc400", "#ff3b57"],
-            borderRadius: 6,
+            backgroundColor: ["#30d158", "#0a84ff", "#ffd60a", "#ff453a"],
+            borderRadius: 4,
           },
         ],
       },
@@ -626,7 +622,7 @@
           x: { grid: { display: false } },
           y: {
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            grid: { color: "#26262a" },
           },
         },
       },
@@ -643,8 +639,8 @@
           {
             label: "Importance Weight",
             data: topFeatures.map((f) => (f.weight * 100).toFixed(1)),
-            backgroundColor: "#38bdf8",
-            borderRadius: 6,
+            backgroundColor: "#0a84ff",
+            borderRadius: 4,
           },
         ],
       },
@@ -663,7 +659,7 @@
         scales: {
           x: {
             ticks: { callback: (val) => `${val}%` },
-            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            grid: { color: "#26262a" },
           },
           y: { grid: { display: false } },
         },
@@ -679,7 +675,7 @@
         datasets: [
           {
             data: [0, 0, 0, 0],
-            backgroundColor: ["#ff3b57", "#ff9100", "#ffc400", "#00e676"],
+            backgroundColor: ["#ff453a", "#ff9f0a", "#ffd60a", "#30d158"],
             borderWidth: 0,
           },
         ],
@@ -698,7 +694,7 @@
           }
         },
         plugins: {
-          legend: { position: "right", labels: { font: { weight: "600" } } },
+          legend: { position: "right" },
           tooltip: {
             callbacks: {
               afterBody: () => "Click slice to filter cohort",
@@ -710,7 +706,7 @@
     });
   }
 
-  // Update Dynamic Charts based on filtered subset
+  // Update Dynamic Charts
   function updateCharts(records) {
     if (records.length === 0) return;
 
@@ -736,7 +732,7 @@
     state.charts.division.data.datasets[0].data = divRates;
     state.charts.division.update();
 
-    // 3. Semester Timeline (Combo Chart)
+    // 3. Semester Timeline
     const semesterVolumes = [];
     const semesterDepRates = [];
     for (let sem = 0; sem <= 12; sem++) {
@@ -796,9 +792,9 @@
   // =========================================================================
   function attachSimulatorListeners() {
     // Health Segmented Control
-    els.simHealthPills.querySelectorAll(".segment-btn").forEach((btn) => {
+    els.simHealthPills.querySelectorAll(".segment-item").forEach((btn) => {
       btn.addEventListener("click", () => {
-        els.simHealthPills.querySelectorAll(".segment-btn").forEach((b) => b.classList.remove("active"));
+        els.simHealthPills.querySelectorAll(".segment-item").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         state.simulator.health = btn.getAttribute("data-val");
         els.simValHealth.textContent = state.simulator.health;
@@ -807,9 +803,9 @@
     });
 
     // Relationship Segmented Control
-    els.simRelPills.querySelectorAll(".segment-btn").forEach((btn) => {
+    els.simRelPills.querySelectorAll(".segment-item").forEach((btn) => {
       btn.addEventListener("click", () => {
-        els.simRelPills.querySelectorAll(".segment-btn").forEach((b) => b.classList.remove("active"));
+        els.simRelPills.querySelectorAll(".segment-item").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         state.simulator.relationship = btn.getAttribute("data-val");
         els.simValRel.textContent = state.simulator.relationship;
@@ -818,9 +814,9 @@
     });
 
     // Friends Segmented Control
-    els.simFriendsPills.querySelectorAll(".segment-btn").forEach((btn) => {
+    els.simFriendsPills.querySelectorAll(".segment-item").forEach((btn) => {
       btn.addEventListener("click", () => {
-        els.simFriendsPills.querySelectorAll(".segment-btn").forEach((b) => b.classList.remove("active"));
+        els.simFriendsPills.querySelectorAll(".segment-item").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         state.simulator.friends = btn.getAttribute("data-val");
         els.simValFriends.textContent = state.simulator.friends === "Yes" ? "Supported (Has Friends)" : "Isolated (No Friends)";
@@ -847,7 +843,6 @@
   function runSimulator() {
     const s = state.simulator;
 
-    // Base probability from health condition (accounts for 79.4% importance)
     let p = 0.05;
     if (s.health === "Critical") {
       p = 0.85;
@@ -859,7 +854,6 @@
       p = 0.04;
     }
 
-    // Relationship & Social Support interaction
     if (s.relationship === "Single") {
       p += (s.friends === "No") ? 0.12 : 0.03;
     } else if (s.relationship === "In a Relationship") {
@@ -868,59 +862,53 @@
       p += 0.05;
     }
 
-    // CGPA modifier (lower CGPA increases risk)
     if (s.cgpa < 3.00) {
       p += 0.04;
     } else if (s.cgpa >= 3.75) {
       p -= 0.02;
     }
 
-    // Living cost modifier (high financial strain increases risk)
     if (s.cost > 18000) {
       p += 0.04;
     } else if (s.cost < 6000) {
       p -= 0.01;
     }
 
-    // Clamp probability between 0.015 and 0.985
     p = Math.max(0.015, Math.min(0.985, p));
 
-    // Update UI Gauge
     const pct = (p * 100).toFixed(1);
     els.simRiskPct.textContent = `${pct}%`;
 
-    // SVG Circle progress calculation (Circumference = 2 * PI * 66 = ~414.69)
     const maxOffset = 414.69;
     const progressOffset = maxOffset - (maxOffset * p);
     els.simGaugeCircle.style.strokeDashoffset = progressOffset;
 
-    // Tiers and Protocol
     let tierText = "Low Risk";
-    let tierClass = "badge-low";
-    let strokeColor = "#00e676";
+    let tierClass = "tier-low";
+    let strokeColor = "#30d158";
     let protocolText = "Routine Wellness Monitoring. Student shows solid protective health and social baselines.";
 
     if (p >= 0.85) {
       tierText = "Critical Risk";
-      tierClass = "badge-critical";
-      strokeColor = "#ff3b57";
+      tierClass = "tier-critical";
+      strokeColor = "#ff453a";
       protocolText = "Immediate Clinical Referral. Medical and mental health dispatch priority within 24 hours.";
     } else if (p >= 0.60) {
       tierText = "High Risk";
-      tierClass = "badge-high";
-      strokeColor = "#ff9100";
-      protocolText = "Counseling Center Outreach. Schedule proactive one-on-one session with student affairs counselor.";
+      tierClass = "tier-high";
+      strokeColor = "#ff9f0a";
+      protocolText = "Counseling Center Outreach. Proactive session scheduled with student affairs counselor.";
     } else if (p >= 0.30) {
       tierText = "Moderate Risk";
-      tierClass = "badge-moderate";
-      strokeColor = "#ffc400";
+      tierClass = "tier-moderate";
+      strokeColor = "#ffd60a";
       protocolText = "Academic Advisor Check-in. Recommend peer support groups and monitor upcoming exam performance.";
     }
 
     els.simGaugeCircle.style.stroke = strokeColor;
-    els.simRiskBadge.className = `tier-badge ${tierClass}`;
+    els.simRiskBadge.className = `status-tag ${tierClass}`;
     els.simRiskBadge.textContent = tierText;
-    els.simProtocolText.innerHTML = `<strong>Recommended Protocol:</strong> ${protocolText}`;
+    els.simProtocolText.innerHTML = `<strong>Action Protocol:</strong> ${protocolText}`;
   }
 
   // Render Student Roster Table
@@ -937,15 +925,15 @@
 
     els.tableBody.innerHTML = "";
     if (pageRecords.length === 0) {
-      els.tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 2.5rem; color: #64748b;">No matching student records found</td></tr>`;
+      els.tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 2.5rem; color: #6e6e73;">No matching student records found</td></tr>`;
     } else {
       pageRecords.forEach((r) => {
         const tr = document.createElement("tr");
 
-        let badgeClass = "badge-low";
-        if (r.risk_tier === "Critical Risk") badgeClass = "badge-critical";
-        else if (r.risk_tier === "High Risk") badgeClass = "badge-high";
-        else if (r.risk_tier === "Moderate Risk") badgeClass = "badge-moderate";
+        let badgeClass = "tier-low";
+        if (r.risk_tier === "Critical Risk") badgeClass = "tier-critical";
+        else if (r.risk_tier === "High Risk") badgeClass = "tier-high";
+        else if (r.risk_tier === "Moderate Risk") badgeClass = "tier-moderate";
 
         tr.innerHTML = `
           <td><strong>${r.id}</strong></td>
@@ -955,7 +943,7 @@
           <td>${r.cgpa.toFixed(2)}</td>
           <td>${r.health}</td>
           <td><strong>${(r.risk_score * 100).toFixed(1)}%</strong></td>
-          <td><span class="tier-badge ${badgeClass}">${r.risk_tier}</span></td>
+          <td><span class="status-tag ${badgeClass}">${r.risk_tier}</span></td>
           <td>${r.priority}</td>
         `;
         els.tableBody.appendChild(tr);
